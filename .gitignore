@@ -1,0 +1,10 @@
+# Ignore cache and generated data
+.cache/
+good_first_issues.csv
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Environment
+.env
+venv/
