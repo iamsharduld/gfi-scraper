@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68.0", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gfi-scraper"
+version = "0.1.0"
+description = "Discover, rank, and get personalized recommendations for 'good first issue' contributions"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+dependencies = [
+    "rich>=13.0",
+    "openai>=1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+]
+
+[project.scripts]
+gfi-scraper = "gfi_scraper.tui:main"
+gfi-scrape = "gfi_scraper.scrape_good_first_issues:main"
+gfi-match = "gfi_scraper.match_issues:main"
+gfi-tui = "gfi_scraper.tui:main"
+
+[project.urls]
+Repository = "https://github.com/iamsharduld/gfi-scraper"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

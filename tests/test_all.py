@@ -25,14 +25,8 @@ import pytest
 # Import modules under test
 # ---------------------------------------------------------------------------
 
-import sys
-from pathlib import Path
-
-# Add src to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-
-import scrape_good_first_issues as scraper
-from scrape_good_first_issues import (
+from gfi_scraper import scrape_good_first_issues as scraper
+from gfi_scraper.scrape_good_first_issues import (
     Issue,
     _score_freshness,
     _score_competition,
@@ -62,16 +56,16 @@ from scrape_good_first_issues import (
     BODY_EXCERPT_LENGTH,
 )
 
-import match_issues
-from match_issues import (
+from gfi_scraper import match_issues
+from gfi_scraper.match_issues import (
     UserProfile,
     IssueSummary,
     build_prompt,
     load_issues as match_load_issues,
 )
 
-import tui
-from tui import (
+from gfi_scraper import tui
+from gfi_scraper.tui import (
     load_issues as tui_load_issues,
     filter_issues,
     score_style,

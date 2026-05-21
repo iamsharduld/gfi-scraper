@@ -19,34 +19,39 @@ Discover, rank, and get personalized recommendations for "good first issue" cont
 - [`gh` CLI](https://cli.github.com/) authenticated (`gh auth login`)
 - [OpenAI API key](https://platform.openai.com/api-keys) (for LLM matching only)
 
-### Install dependencies
+### Install
 
 ```bash
-pip install rich openai
+pip install .
+
+# Or for development (editable install with test dependencies)
+pip install -e ".[dev]"
 ```
 
 ### Run
 
 ```bash
 # 1. Scrape and rank all issues
-python3 src/scrape_good_first_issues.py
+gfi-scrape
 
 # 2. Interactive TUI (browse, filter, match)
 export OPENAI_API_KEY='sk-...'
-python3 src/tui.py
+gfi-tui
 
 # 3. Or use the headless matcher
-python3 src/match_issues.py
+gfi-match
 ```
 
 ## Project Structure
 
 ```
+├── pyproject.toml
 ├── README.md
 ├── docs/
 │   ├── architecture.md        # System design & data flow
 │   └── scoring.md             # Ranking heuristic explained
-├── src/
+├── src/gfi_scraper/
+│   ├── __init__.py
 │   ├── scrape_good_first_issues.py   # Scraper + ranker + cache
 │   ├── match_issues.py               # LLM-powered matcher
 │   └── tui.py                        # Interactive terminal UI
@@ -62,22 +67,22 @@ python3 src/match_issues.py
 
 ```bash
 # Basic run
-python3 src/scrape_good_first_issues.py
+gfi-scrape
 
 # Custom org
-python3 src/scrape_good_first_issues.py --org ubuntu
+gfi-scrape --org ubuntu
 
 # Auto-refresh every 4 hours
-python3 src/scrape_good_first_issues.py --watch --interval 4
+gfi-scrape --watch --interval 4
 
 # Generate crontab entry
-python3 src/scrape_good_first_issues.py --cron
+gfi-scrape --cron
 ```
 
 ### TUI
 
 ```bash
-python3 src/tui.py
+gfi-tui
 ```
 
 | Key | Action |
@@ -93,7 +98,7 @@ python3 src/tui.py
 ### Matcher (headless)
 
 ```bash
-python3 src/match_issues.py --top 15
+gfi-match --top 15
 ```
 
 ## How Scoring Works
