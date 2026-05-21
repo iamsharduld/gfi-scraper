@@ -512,14 +512,29 @@ def show_menu() -> None:
 
 
 def main() -> int:
+    from gfi_scraper.scrape_good_first_issues import run_scrape, DEFAULT_ORG
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--csv", default=DEFAULT_CSV)
+    parser.add_argument("--org", default=DEFAULT_ORG)
     args = parser.parse_args()
 
     csv_path = Path(args.csv)
     if not csv_path.exists():
+        console.print("[warning]⚠️  No issue data found.[/]")
+        console.print("[info]Scraping fresh issues...[/]\n")
+        result = run_scrape(args.org, args.csv)
+        if result != 0:
+            return result
+    else:
+        if Confirm.ask("[bold]Rescrape issues before starting?[/]", default=False):
+            console.print("[info]Scraping fresh issues...[/]\n")
+            result = run_scrape(args.org, args.csv)
+            if result != 0:
+                return result
+
+    if not csv_path.exists():
         console.print(f"[error]❌ CSV not found: {csv_path}[/]")
-        console.print("[muted]Run scrape_good_first_issues.py first.[/]")
         return 1
 
     issues = load_issues(csv_path)
