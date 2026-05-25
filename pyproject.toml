@@ -12,6 +12,7 @@ requires-python = ">=3.12"
 dependencies = [
     "rich>=13.0",
     "openai>=1.0",
+    "flask>=3.0",
 ]
 
 [project.optional-dependencies]
@@ -26,6 +27,7 @@ gfi-match = "gfi_scraper.match_issues:main"
 gfi-assess = "gfi_scraper.assess_quality:main"
 gfi-discover = "gfi_scraper.discover_gfi:main"
 gfi-discover-ui = "gfi_scraper.discover_tui:main"
+gfi-web = "gfi_scraper.web_ui:main"
 gfi-tui = "gfi_scraper.tui:main"
 
 [project.urls]
