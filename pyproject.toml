@@ -25,6 +25,7 @@ gfi-scrape = "gfi_scraper.scrape_good_first_issues:main"
 gfi-match = "gfi_scraper.match_issues:main"
 gfi-assess = "gfi_scraper.assess_quality:main"
 gfi-discover = "gfi_scraper.discover_gfi:main"
+gfi-discover-ui = "gfi_scraper.discover_tui:main"
 gfi-tui = "gfi_scraper.tui:main"
 
 [project.urls]
