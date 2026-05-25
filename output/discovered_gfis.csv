@@ -1,97 +1,559 @@
 gfi_score,title,url,repo,labels,comments,created_at,reason,improved_description,original_body_excerpt
-5,The default value for `git_branch` should be `main`,https://github.com/canonical/cos-configuration-k8s-operator/issues/153,canonical/cos-configuration-k8s-operator,,0,2026-02-20,"Changing the default git branch from master to main is a small, clear configuration update likely requiring only tests or docs adjustments.","## Context
+5,The default value for `git_branch` should be `main`,https://github.com/canonical/cos-configuration-k8s-operator/issues/153,canonical/cos-configuration-k8s-operator,,0,2026-02-20,"Changing the default git branch from master to main is small, clear, and likely only requires updating configuration and tests.","## Context
 
-`cos-configuration-k8s-operator` can sync configuration from a Git repository. The charm exposes a `git_branch` configuration option to choose which branch to sync.
+`cos-configuration-k8s-operator` syncs configuration from a Git repository. Users can configure which branch should be synced using the `git_branch` charm configuration option.
 
 ## Problem
 
-The default value for `git_branch` is currently `master`. Many repositories now use `main` as the default branch, so the charm should default to `main` instead.
+The default value for `git_branch` is currently `master`. Most new Git repositories now use `main` as the default branch, so the charm should default to `main` instead.
 
 ## Suggested approach
 
-1. Search the repository for `git_branch` and `master`.
-2. Update the default value of the `git_branch` config option from `master` to `main`.
-3. Update any documentation or examples that describe the default branch.
-4. Update tests that assert the old default value.
-5. Run the relevant test suite.
+1. Find where the `git_branch` configuration option is defined.
+2. Change its default value from `master` to `main`.
+3. Search the repository for other references to `master` that are specifically related to the default `git_branch` value.
+4. Update tests that expect `master` as the default.
+5. Run the relevant unit tests.
 
 ## Files to look at
 
 - `config.yaml`
-- `README.md`
-- `docs/`
+- `src/charm.py`
 - `tests/`
+- Any docs that mention the default branch, such as `README.md` or `docs/`
 
 ## Acceptance criteria
 
 - The default value of `git_branch` is `main`.
-- Documentation and examples no longer claim the default is `master`.
-- Tests pass with the new default.
+- Tests pass after updating any expectations from `master` to `main`.
+- User-facing documentation, if it mentions the default branch, is updated.
 - Existing users can still explicitly configure `git_branch=master` if needed.
 
 ## Resources
 
-- Juju charm config documentation: https://juju.is/docs/sdk/config",Currently it's `master`. Shouldn't it be `main` given that most people have switched to main already?
-4,move documentation out of discourse,https://github.com/canonical/cos-configuration-k8s-operator/issues/162,canonical/cos-configuration-k8s-operator,Type: Enhancement; Status: Triage,0,2026-04-20,"Documentation migration is a bounded, non-architectural task with a clear target, though it may require learning the repo's Sphinx setup.","## Context
+- Juju charm configuration docs: https://juju.is/docs/sdk/config",Currently it's `master`. Shouldn't it be `main` given that most people have switched to main already?
+5,docs: reword `How to sync alert rules from Git` doc so it's clear that the same instructions apply for syncing dashboards,https://github.com/canonical/observability-stack/issues/306,canonical/observability-stack,,0,2026-04-27,"This is a small, well-defined documentation rewording task with an obvious goal and minimal codebase knowledge required.","## Context
 
-`cos-configuration-k8s-operator` is a Juju charm for managing COS configuration in Kubernetes. Its user documentation is currently linked from `charmcraft.yaml` to a Discourse page.
+The Observability documentation explains how to use COS Config to sync observability configuration from a Git repository. This includes Prometheus alert rules, Loki alert rules, and Grafana dashboards.
 
 ## Problem
 
-The charm documentation should be moved out of Discourse and into the repository's Sphinx documentation so it can be built, reviewed, and versioned with the code.
+The current page title and wording focus on syncing alert rules from Git. Dashboards are only mentioned subtly, which can make readers think the instructions apply only to alert rules.
 
-Current documentation link in `charmcraft.yaml` points to:
-
-https://discourse.charmhub.io/t/cos-configuration-k8s-docs-index/7284
+The page should be reworded so it is clear that the same workflow applies to both alert rules and dashboards.
 
 ## Suggested approach
 
-1. Inspect the existing documentation setup in the repository.
-2. Create or update the Sphinx documentation source files.
-3. Migrate the relevant content from the Discourse page into the Sphinx docs.
-4. Update navigation/index pages so the new docs are discoverable.
+1. Open the documentation page source for `How to sync alert rules from a Git repository`.
+2. Reword the title to include dashboards, for example: `How to sync alert rules and dashboards from a Git repository`.
+3. Update the introduction to explicitly mention Prometheus rules, Loki rules, and Grafana dashboards.
+4. Review headings and examples for places where `alert rules` should be broadened to `alert rules and dashboards` or `COS configuration`.
+5. Keep any alert-rule-specific instructions where they are still accurate.
+6. Build or preview the docs locally, if supported.
+
+## Files to look at
+
+- Documentation source for: `how-to/configure-and-tune/sync-alert-rules-from-git`
+- Likely under `docs/` or `documentation/`
+- Navigation/index files that reference the page title
+
+## Acceptance criteria
+
+- The page title clearly mentions both alert rules and dashboards.
+- The introduction explains that COS Config can sync Prometheus rules, Loki rules, and Grafana dashboards.
+- The wording no longer implies that the guide only applies to alert rules.
+- Documentation navigation, if it uses the old title, is updated.
+- The docs build succeeds without new warnings.
+
+## Resources
+
+- Current published page: https://documentation.ubuntu.com/observability/latest/how-to/configure-and-tune/sync-alert-rules-from-git/","*Please describe the question or issue you're facing with ""How to sync alert rules from a Git repository - Observability documentation"".*
+As it's written, the `How to sync alert rules from Git` doc le"
+5,docs: Empty page needs to be removed or updated,https://github.com/canonical/observability-stack/issues/249,canonical/observability-stack,,0,2026-04-12,This is a very small documentation cleanup with a clear goal of either removing an empty page or adding minimal content.,"## Context
+
+The Observability documentation includes explanation pages that help users understand COS concepts before following tutorials or how-to guides.
+
+## Problem
+
+The page `What is COS?` is currently empty. Empty documentation pages are confusing for readers and should either contain useful content or be removed from the navigation.
+
+## Suggested approach
+
+1. Locate the source file for the `What is COS?` page.
+2. Decide whether the page should be kept or removed:
+   - If keeping it, add a short explanation of what COS is and link to related overview pages.
+   - If removing it, delete the page and remove it from the navigation/index.
+3. Build the docs locally to ensure there are no broken links or navigation errors.
+4. Check whether any other pages link to the removed/updated page and update those links if needed.
+
+## Files to look at
+
+- `docs/explanation/overview/`
+- The file for `what-is-cos`, likely `docs/explanation/overview/what-is-cos.md` or similar
+- Documentation navigation/index files under `docs/`
+
+## Acceptance criteria
+
+- The `What is COS?` page is no longer empty.
+- If the page is removed, it is also removed from documentation navigation.
+- Documentation builds without broken links or warnings related to this page.
+- The resulting page or navigation is useful to a new reader.
+
+## Resources
+
+- Reported page: https://documentation.ubuntu.com/observability/latest/explanation/overview/what-is-cos/","There is no content on this page. 
+
+*Please describe the question or issue you're facing with ""What is COS? - Observability documentation"".*
+
+
+
+
+---
+*Reported from: https://documentation.ubuntu.com/ob"
+5,docs: remove the `known issue` in the `Migrating from GA to Otelcol doc`,https://github.com/canonical/observability-stack/issues/200,canonical/observability-stack,,0,2026-03-06,"Removing or updating an obsolete known-issue section is a small, clear documentation task.","## Context
+
+The Observability Stack documentation includes a guide for migrating from Grafana Agent to the OpenTelemetry Collector.
+
+## Problem
+
+The migration guide still lists a `Known Issues` item that referred to a pending PR. That PR has now been merged, so the known issue is obsolete and should be removed or updated.
+
+## Suggested approach
+
+1. Open the source page for the migration guide.
+2. Find the `Known Issues` section.
+3. Remove the resolved known issue, or remove the whole section if it no longer contains any active issues.
+4. Check that any links or references to the old PR are also removed if they are no longer needed.
+5. Build or preview the docs locally to ensure the page renders correctly.
+
+## Files to look at
+
+- `docs/how-to/migrate-gagent-to-otelcol*`
+- Documentation navigation/config files if the section removal affects page structure
+
+## Acceptance criteria
+
+- The obsolete known issue is no longer shown in the migration guide.
+- No outdated reference to the already-merged PR remains.
+- The documentation builds without warnings or broken links.
+
+## Resources
+
+- Published page: https://documentation.ubuntu.com/observability/latest/how-to/migrate-gagent-to-otelcol/","*Please describe the question or issue you're facing with ""Migrate from Grafana Agent to OpenTelemetry Collector - Observability documentation"".*
+The `Known Issues` section in the doc attached mention"
+5,docs: drop telemetry: mention COSAgentProvider explicitly,https://github.com/canonical/observability-stack/issues/147,canonical/observability-stack,,0,2025-11-19,"This is a small, well-scoped documentation update with explicit wording and links to guide the change.","## Context
+
+The Observability Stack documentation includes a guide about selectively dropping telemetry. Charm authors can also control scraped metrics through the COS agent library when exposing telemetry from their own charms.
+
+## Problem
+
+The `Selectively drop telemetry` documentation should explicitly mention using `COSAgentProvider` from the `cos-agent` library as an option for charm authors. The docs should explain that charms can generate scrape configs and include relabel/drop rules before passing them to `COSAgentProvider`.
+
+## Suggested approach
+
+1. Open the `Selectively drop telemetry` documentation page.
+2. Add a short section for charm authors using the COS agent library.
+3. Mention `COSAgentProvider` explicitly.
+4. Explain that the charm can generate a Prometheus `scrape_config` and include relabeling rules to drop unwanted metrics, labels, or targets.
+5. Link to the `COSAgentProvider` implementation and Prometheus scrape/relabel configuration docs.
+6. Build or preview the docs to verify formatting and links.
+
+## Files to look at
+
+- `docs/how-to/selectively-drop-telemetry*`
+- Any existing docs that mention `COSAgentProvider` or `cos_agent.py`
+
+## Acceptance criteria
+
+- The page mentions `COSAgentProvider` as an option for charm authors.
+- The page explains, at a high level, where to put generated `scrape_config`/relabeling rules.
+- Links to relevant COS agent and Prometheus configuration docs are included.
+- The documentation builds without broken links.
+
+## Resources
+
+- Current published docs section: https://documentation.ubuntu.com/observability/latest/
+- `COSAgentProvider` source: https://github.com/canonical/grafana-agent-operator/blob/8cbc7cf331d6e1e0c543d1d763892c56ba507670/lib/charms/grafana_agent/v0/cos_agent.py#L72
+- Prometheus scrape config docs: https://prometheus.io/docs/prometheus/latest/configuration/configuration/
+- Prometheus relabel config docs: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config","*Please describe the question or issue you're facing with ""Selectively drop telemetry - Observability documentation"".*
+
+For completeness, we should mention COSAgentProvider in the docs, something alon"
+5,Link to the observability part of the charming tutorial from our docs,https://github.com/canonical/observability-stack/issues/96,canonical/observability-stack,Type: Enhancement; Type: Documentation; Priority: Medium,0,2025-09-03,"Adding a link to an existing tutorial is a small, clear, and low-risk documentation change.","## Context
+
+The Observability Stack documentation helps users install and use COS Lite and related observability components. The charming tutorial includes a practical section showing how to observe a Kubernetes charm with COS Lite.
+
+## Problem
+
+Add a link from the Observability Stack docs to the observability section of the charming tutorial, so users can find a hands-on example after setting up the stack.
+
+## Suggested approach
+
+1. Review the docs navigation and introduction pages to find the best place for a practical tutorial link.
+2. Add a short paragraph or callout pointing readers to the charm observability tutorial.
+3. Use link text that clearly explains what the tutorial covers.
+4. Build or preview the docs locally if possible.
+5. Check that the external link works.
+
+## Files to look at
+
+- `docs/index.md`
+- `docs/tutorials/`
+- `docs/how-to/`
+- Any docs page that introduces COS Lite or next steps after installation
+
+## Acceptance criteria
+
+- The docs include a visible link to the observability part of the charming tutorial.
+- The link text explains that it is a practical example of observing a charm with COS Lite.
+- The link is placed in a relevant page or navigation section.
+- Documentation builds without formatting or link errors.
+
+## Resources
+
+- Tutorial to link: https://documentation.ubuntu.com/ops/latest/tutorial/from-zero-to-hero-write-your-first-kubernetes-charm/observe-your-charm-with-cos-lite/#","After some conversations with @adhityaravi, we came up with the following idea:
+
+We should link to the observability part of the charming tutorial from our docs; making sure people get a reference of "
+5,README table cell dark colors with black text,https://github.com/canonical/observability/issues/448,canonical/observability,,0,2026-05-08,"A small, visual README styling fix with an obvious success criterion and minimal codebase knowledge required.","## Context
+
+The `canonical/observability` README documents shared observability workflows and tools. It contains tables with styled cells to highlight workflow or release information.
+
+## Problem
+
+Some table cells use very dark background colors with black text, making the text difficult or impossible to read unless selected. For example, the `Release Charm (per arch)` cell is hard to read.
+
+## Suggested approach
+
+1. Open the README and find the table cell styling that uses dark background colors.
+2. Change the color scheme so text has sufficient contrast against the background.
+3. Prefer simple, GitHub-friendly Markdown or HTML styles that render well in both light and dark GitHub themes.
+4. Preview the README in GitHub or a local Markdown viewer.
+5. Check nearby cells for the same readability problem and fix them too if needed.
+
+## Files to look at
+
+- `README.md`
+
+## Acceptance criteria
+
+- All README table text is readable without selecting it.
+- The affected `Release Charm (per arch)` cell has sufficient contrast.
+- The table still renders correctly on GitHub.
+- No unrelated README content is changed.
+
+## Resources
+
+- GitHub Markdown guide: https://docs.github.com/en/get-started/writing-on-github
+- WCAG contrast guidance: https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html","The README has some text with very very dark background colors, e.g. this ""Release Charm (per arch)"" can only be read when selected.
+
+Consider changing the color scheme to be readable."
+5,`pull_request` workflows should trigger on all target branches.,https://github.com/canonical/observability/issues/394,canonical/observability,,0,2025-10-02,This is a straightforward workflow trigger update across PR workflows with a clear desired outcome.,"## Context
+
+This repository provides shared GitHub Actions workflows for the Canonical Observability team. Several workflows are triggered on `pull_request` events.
+
+## Problem
+
+Some `pull_request` workflows only run when the pull request targets specific branches. We want all relevant PR workflows to run regardless of the target branch, so workflows should trigger for pull requests targeting any branch.
+
+## Suggested approach
+
+1. Inspect the workflow files in `.github/workflows/`.
+2. Find workflows that use `on: pull_request:` with a `branches:` filter.
+3. Update those triggers so they run for all pull request target branches. This may mean:
+   - removing the `branches:` filter entirely, or
+   - replacing it with a wildcard pattern if needed.
+4. Keep other existing trigger configuration, such as `paths`, `types`, or `workflow_call`, unchanged unless required.
+5. Validate that the YAML remains valid.
+
+## Files to look at
+
+- `.github/workflows/*.yaml`
+- `.github/workflows/*.yml`
+
+## Acceptance criteria
+
+- All relevant `pull_request` workflows trigger for PRs targeting any branch.
+- Existing non-branch filters, such as path filters, are preserved.
+- No unrelated workflow behavior is changed.
+- Workflow YAML is valid.
+
+## Resources
+
+- Tracking issue: https://github.com/canonical/observability-team/issues/145
+- GitHub Actions `pull_request` event docs: https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#pull_request
+- Workflow syntax for branch filters: https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#onpull_requestpull_request_targetbranchesbranches-ignore","See https://github.com/canonical/observability-team/issues/145.
+
+Let's make it so that all of them trigger on pull requests where the target is `*`."
+5,Set `branchdir` in the tiobe action,https://github.com/canonical/observability/issues/392,canonical/observability,,0,2025-09-17,"Setting a documented action input is a small, concrete configuration change with an example provided.","## Context
+
+This repository contains reusable workflows and actions used by Observability charm and rock repositories. One of these workflows runs the Tiobe quality scan.
+
+## Problem
+
+The Tiobe action supports a `branchdir` input that tells Tiobe where the source code root is. By default, it scans from the repository root. In monorepos with multiple charms or rocks, this can include unrelated projects and produce an incorrect quality score.
+
+The workflow should set `branchdir` to the charm or project path, for example `REPO_ROOT/CHARM_PATH`, so only the intended project is scanned.
+
+## Suggested approach
+
+1. Locate the workflow or composite action step that invokes the Tiobe action.
+2. Check what input already identifies the charm/project directory, such as `charm-path`, `charmcraft-channel`, or a similar workflow input.
+3. Add the Tiobe `branchdir` input and point it to the project directory.
+4. Make sure the value works both for single-project repositories and monorepos.
+5. If needed, add or update workflow input documentation so callers know how the directory is chosen.
+
+## Files to look at
+
+- `.github/workflows/`
+- Any workflow file that references the Tiobe action
+- Any documentation that describes the Tiobe or quality-check workflow inputs
+
+## Acceptance criteria
+
+- The Tiobe action is called with a `branchdir` value pointing to the intended project/charm directory.
+- Monorepos no longer scan sibling charm or project directories unintentionally.
+- Existing single-project repositories continue to work.
+- Workflow YAML is valid.
+
+## Resources
+
+- Example failing run: https://github.com/canonical/tempo-operators/actions/runs/17793199873/job/50574773382?pr=182
+- GitHub Actions workflow syntax: https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions","`branchdir` lets tiobe know what is the root directory of the source files. By default, it's set to the root of the repository. In the case of monorepos that have multiple projects live under them, we"
+5,Standarise workers'  titles in charmhub,https://github.com/canonical/observability/issues/313,canonical/observability,,0,2025-05-01,"Standardizing Charmhub titles is a small, concrete metadata cleanup across known charms with an obvious expected outcome.","## Context
+
+Charmhub displays each charm's metadata, including the charm title, from the charm's published metadata. The Loki, Mimir, and Tempo worker charms are part of the Canonical Observability Stack and should use consistent naming on Charmhub.
+
+## Problem
+
+The worker charms currently use inconsistent titles on Charmhub:
+
+- [loki-worker-k8s](https://charmhub.io/loki-worker-k8s)
+- [mimir-worker-k8s](https://charmhub.io/mimir-worker-k8s)
+- [tempo-worker-k8s](https://charmhub.io/tempo-worker-k8s)
+
+Update the charm metadata so these worker charms follow the same title format.
+
+## Suggested approach
+
+1. Check the current Charmhub titles for the three worker charms.
+2. Find where each charm defines its title, usually in `charmcraft.yaml`.
+3. Pick a consistent title format, for example:
+   - `Loki Worker`
+   - `Mimir Worker`
+   - `Tempo Worker`
+4. Update the relevant metadata files.
+5. Run any available formatting or validation commands for the affected charms.
+6. Open PRs in the relevant charm repositories, or one PR if all metadata is managed from this repository.
+
+## Files to look at
+
+Start by searching for `title:` in the worker charm repositories, especially:
+
+- `charmcraft.yaml`
+- `*/charmcraft.yaml`
+- `metadata.yaml`, if present
+
+Likely related charm repositories:
+
+- `canonical/loki-k8s-operator`
+- `canonical/mimir-k8s-operator`
+- `canonical/tempo-k8s-operator`
+
+## Acceptance criteria
+
+- The Loki, Mimir, and Tempo worker charms use a consistent title format.
+- The updated titles are reflected in the relevant charm metadata files.
+- Metadata validation passes for each changed charm.
+- The expected Charmhub display titles are documented in the PR description.
+
+## Resources
+
+- [Charmcraft metadata documentation](https://canonical-charmcraft.readthedocs-hosted.com/)
+- [Loki worker on Charmhub](https://charmhub.io/loki-worker-k8s)
+- [Mimir worker on Charmhub](https://charmhub.io/mimir-worker-k8s)
+- [Tempo worker on Charmhub](https://charmhub.io/tempo-worker-k8s)","For [Loki worker](https://charmhub.io/loki-worker-k8s) we have
+
+![Image](https://github.com/user-attachments/assets/d67134ca-31f8-4ae7-ba14-42b1934dbfd1)
+
+
+For [Mimir worker](https://charmhub.io/mimir"
+5,Generate docs for the terraform modules using terraform-docs,https://github.com/canonical/observability/issues/277,canonical/observability,,0,2025-03-14,Generating Terraform module docs with terraform-docs is a well-defined tooling task with an example to follow.,"## Context
+
+This repository contains Terraform modules used by Canonical Observability projects. Generated documentation helps users understand each module's inputs, outputs, providers, and usage without manually reading the Terraform source.
+
+## Problem
+
+Terraform module documentation should be generated automatically using `terraform-docs`, following the pattern used in `canonical/charm-engineering-repos`.
+
+## Suggested approach
+
+1. Review how `terraform-docs` is configured in the example repository.
+2. Find the Terraform modules in this repository.
+3. Add a `terraform-docs` configuration file if one does not already exist.
+4. Generate documentation for each Terraform module.
+5. Commit the generated documentation, usually in each module's `README.md`.
+6. Optionally add or update CI so future PRs fail if generated Terraform docs are out of date.
+
+## Files to look at
+
+- Terraform module directories, for example directories containing:
+  - `main.tf`
+  - `variables.tf`
+  - `outputs.tf`
+- `.terraform-docs.yml`, if present
+- `.github/workflows/`, if adding a CI check
+- Existing `README.md` files in Terraform module directories
+
+## Acceptance criteria
+
+- Each Terraform module has generated documentation from `terraform-docs`.
+- Generated docs include module inputs, outputs, providers, and requirements where applicable.
+- The generated documentation is committed to the repository.
+- If CI is added, it verifies that Terraform docs are up to date.
+
+## Resources
+
+- [terraform-docs](https://terraform-docs.io/)
+- [terraform-docs GitHub repository](https://github.com/terraform-docs/terraform-docs)
+- [Example: canonical/charm-engineering-repos](https://github.com/canonical/charm-engineering-repos)",See https://github.com/canonical/charm-engineering-repos for a relevant example.
+5,Update the uv lockfile in the charm-update-libs workflow,https://github.com/canonical/observability/issues/237,canonical/observability,,0,2024-12-02,"The issue gives a concrete workflow change—add `make lock`—making it small, clear, and easy to verify.","## Context
+
+This repository uses automated workflows to keep charm libraries and Python dependency files up to date. Dependencies are declared in `pyproject.toml`, and the generated lock/requirements files are produced by running `make lock`.
+
+## Problem
+
+The charm library update workflow updates libraries but does not also refresh the uv lockfile / generated dependency files. Since `pyproject.toml` is intentionally unpinned, the workflow should run `make lock` after updating libraries so dependency outputs stay current.
+
+## Suggested approach
+
+1. Open the workflow used for charm library updates.
+2. Find the step that runs the charm library update command.
+3. Add a new step after it that runs `make lock`.
+4. Ensure any changed generated files, such as the uv lockfile or `requirements.txt`, are included in the workflow's resulting pull request/commit.
+5. Confirm the workflow still succeeds when run.
+
+## Files to look at
+
+- `.github/workflows/charm-update-libs.yaml`
+- `.github/workflows/_charm-update-libs.yaml` if the workflow is reusable
+- `Makefile`
+- `pyproject.toml`
+- `uv.lock` or other generated dependency lock files
+- `requirements.txt`
+
+## Acceptance criteria
+
+- The charm update libs workflow runs `make lock` after updating charm libraries.
+- Generated dependency files are included in the automated update when they change.
+- The workflow continues to pass in CI.
+- No unrelated workflow behavior is changed.
+
+## Resources
+
+- Original discussion: https://github.com/canonical/mimir-worker-k8s-operator/pull/84#discussion_r1863959529
+- [uv documentation](https://docs.astral.sh/uv/)","We add `make lock` to the update-libs workflow to keep our dependencies updated since the pyproject.toml is unpinned and the requirements.txt is created with `make lock`.
+
+_Originally posted by @sed"
+5,Add `charmcraft analyze` to linting,https://github.com/canonical/observability/issues/21,canonical/observability,Type: Enhancement,0,2022-12-05,"Adding `charmcraft analyze` to linting is a small, well-defined CI enhancement with an obvious success condition.","## Context
+
+Charm repositories run linting in CI to catch common packaging, metadata, and configuration issues before changes are merged. `charmcraft analyze` provides additional static analysis for charm projects.
+
+## Problem
+
+The existing linting workflow does not run `charmcraft analyze`. We should add it so CI reports Charmcraft analysis issues alongside the other lint checks.
+
+## Suggested approach
+
+1. Find where linting is defined for charm quality checks.
+2. Check whether `charmcraft` is already installed in the lint job.
+3. Add a lint step that runs `charmcraft analyze` from the charm project root.
+4. If linting is routed through `tox` or `make`, consider adding the command there and having CI call the existing lint target.
+5. Run the new command locally or in CI to verify it works.
+6. If `charmcraft analyze` requires a packed charm in this project, add the minimal preceding step needed, such as `charmcraft pack`, and document that in the workflow.
+
+## Files to look at
+
+- `.github/workflows/_charm-quality-checks.yaml`
+- `tox.ini`
+- `Makefile`
+- `charmcraft.yaml`
+
+## Acceptance criteria
+
+- CI linting runs `charmcraft analyze` for charm projects.
+- The command is run in the correct working directory.
+- The workflow installs or uses `charmcraft` successfully.
+- The lint workflow fails if `charmcraft analyze` reports an error.
+- Existing lint checks continue to run.
+
+## Resources
+
+- [Charmcraft command reference](https://canonical-charmcraft.readthedocs-hosted.com/)
+- Related Charmcraft issue: https://github.com/canonical/charmcraft/issues/642
+- Related Charmcraft issue: https://github.com/canonical/charmcraft/issues/913","Related issues:
+- https://github.com/canonical/charmcraft/issues/642
+- https://github.com/canonical/charmcraft/issues/913"
+4,move documentation out of discourse,https://github.com/canonical/cos-configuration-k8s-operator/issues/162,canonical/cos-configuration-k8s-operator,Type: Enhancement; Status: Triage,0,2026-04-20,Moving existing documentation from Discourse to Sphinx is a clear documentation-focused task with limited codebase knowledge required.,"## Context
+
+`cos-configuration-k8s-operator` is a Juju charm used to sync COS configuration, such as alert rules and dashboards, from Git repositories into the Canonical Observability Stack.
+
+The charm's documentation is currently hosted on Discourse, but the project should use Sphinx-based documentation so it can be built and maintained alongside the codebase.
+
+## Problem
+
+The documentation link in `charmcraft.yaml` currently points to a Discourse page:
+
+`https://discourse.charmhub.io/t/cos-configuration-k8s-docs-index/7284`
+
+The existing documentation should be moved into the repository's Sphinx documentation structure, and the charm metadata should point to the new documentation location.
+
+## Suggested approach
+
+1. Review the current Discourse documentation and identify the pages/content that need to be migrated.
+2. Add the documentation content to the repository's Sphinx docs directory.
+3. Convert formatting from Discourse/Markdown to the format used by the repo docs, if needed.
+4. Update the documentation index so the new pages are included in the generated docs.
 5. Update `charmcraft.yaml` so the documentation link no longer points to Discourse.
-6. Build the docs locally and fix any warnings or broken links.
+6. Build the docs locally, if supported, and fix any warnings or broken links.
 
 ## Files to look at
 
 - `charmcraft.yaml`
 - `docs/`
 - `README.md`
-- `tox.ini` or other docs build configuration, if present
+- Any existing Sphinx config files such as `docs/conf.py`
 
 ## Acceptance criteria
 
-- Documentation content from the Discourse page is available in the repository's Sphinx docs.
-- `charmcraft.yaml` no longer links to the Discourse documentation page.
-- The documentation builds successfully locally.
-- Existing links and navigation are updated as needed.
+- The Discourse-hosted documentation content is available in the repository's Sphinx docs.
+- The new docs are linked from the docs index/navigation.
+- `charmcraft.yaml` points to the new documentation location instead of the Discourse page.
+- The documentation build succeeds without new warnings or broken links.
 
 ## Resources
 
 - Current Discourse docs: https://discourse.charmhub.io/t/cos-configuration-k8s-docs-index/7284
-- Sphinx documentation: https://www.sphinx-doc.org/","### Enhancement Proposal
+- Sphinx documentation: https://www.sphinx-doc.org/en/master/","### Enhancement Proposal
 
 Documentation should be moved to sphinx.
 In charmcraft.yaml the documentation link points to: https://discourse.charmhub.io/t/cos-configuration-k8s-docs-index/7284"
-4,git-sync action calls git-sync twice,https://github.com/canonical/cos-configuration-k8s-operator/issues/146,canonical/cos-configuration-k8s-operator,Type: Enhancement; Status: Triage,0,2026-01-28,"The duplicate git-sync call has a clear cause and proposed fix, though preserving action error behavior may require some care.","## Context
+4,git-sync action calls git-sync twice,https://github.com/canonical/cos-configuration-k8s-operator/issues/146,canonical/cos-configuration-k8s-operator,Type: Enhancement; Status: Triage,0,2026-01-28,"The issue identifies a specific duplicated git-sync call and suggests the intended fix, making it a good scoped code change.","## Context
 
-`cos-configuration-k8s-operator` includes a `git-sync` action that syncs configuration from Git. The charm also has a common exit hook that performs shared cleanup/update logic, including running git-sync to update the stored hash.
+`cos-configuration-k8s-operator` includes a `git-sync` action that manually syncs configuration from a Git repository. The charm also has a common exit hook that updates the stored hash and performs sync-related cleanup after events.
 
 ## Problem
 
-The `git-sync` action currently runs git-sync directly and then calls `self._common_exit_hook()`. Since `_common_exit_hook()` also runs git-sync, the action ends up syncing twice.
+When the `git-sync` action runs, the charm currently calls `git-sync` directly and then calls `self._common_exit_hook()`. However, `_common_exit_hook()` also runs `git-sync`, so the action ends up syncing twice.
 
-The action should avoid the duplicate sync while preserving the useful error output currently shown by the action.
+The action should avoid the duplicate call while still preserving useful error reporting for users.
 
 ## Suggested approach
 
-1. Find the action handler for `git-sync`.
-2. Confirm where git-sync is called directly and where `_common_exit_hook()` calls it again.
-3. Refactor the action so git-sync is only called once.
-4. Preserve or improve the action's error reporting so users still get useful failure details.
-5. Add or update tests to assert that the action triggers git-sync only once.
-6. Run the relevant unit tests.
+1. Locate the `git-sync` action handler in the charm code.
+2. Confirm where `git-sync` is invoked directly in the action.
+3. Confirm that `_common_exit_hook()` already performs the sync.
+4. Refactor the action so `git-sync` is only called once.
+5. Preserve or improve the action's error output so users still get helpful details when sync fails.
+6. Add or update tests to assert that the sync command is called only once when the action runs.
 
 ## Files to look at
 
@@ -101,71 +563,815 @@ The action should avoid the duplicate sync while preserving the useful error out
 
 ## Acceptance criteria
 
-- Running the `git-sync` action invokes git-sync only once.
-- The store hash is still updated correctly after the action.
-- Error output from a failed `git-sync` action remains useful and actionable.
-- Unit tests cover the duplicate-call scenario.
+- Running the `git-sync` action invokes the sync operation exactly once.
+- The store hash is still updated after a successful action run.
+- Failure output from the action remains useful and includes enough detail to debug sync failures.
+- Unit tests cover the action path and pass successfully.
 
 ## Resources
 
-- Juju actions documentation: https://juju.is/docs/sdk/actions","### Enhancement Proposal
+- Juju actions docs: https://juju.is/docs/juju/action
+- Operator Framework events docs: https://juju.is/docs/sdk/events","### Enhancement Proposal
 
 When the action is run, the charm executes `self._common_exit_hook()` to `to update the store hash`, but the common exit hook calls git-sync again, so we call it twice. We sh"
-4,Dynamic IP for COS stack in dev mode,https://github.com/canonical/microcloud-cluster-manager/issues/183,canonical/microcloud-cluster-manager,,0,2025-04-22,"Making the dev COS IP dynamic is a clear, localized dev-configuration improvement with limited architectural impact.","## Context
+4,Dynamic IP for COS stack in dev mode,https://github.com/canonical/microcloud-cluster-manager/issues/183,canonical/microcloud-cluster-manager,,0,2025-04-22,Making the dev COS stack IP dynamic is a concrete configuration improvement with a clear problem statement and limited scope.,"## Context
 
-`microcloud-cluster-manager` includes Kubernetes deployment files for running the project in development mode. The dev configuration includes endpoints for the COS stack, such as Prometheus and Grafana.
+`microcloud-cluster-manager` includes Kubernetes deployment files for running the project in development mode. The dev configuration includes endpoints for the COS stack, including Prometheus and Grafana.
 
 ## Problem
 
-The dev config currently hard-codes the IP address for Prometheus and Grafana:
+The dev config currently hard-codes the IP address for Prometheus and Grafana. In some dev runs, a different IP address is assigned on startup, which makes the generated configuration incorrect.
 
-https://github.com/canonical/microcloud-cluster-manager/blob/main/deployment/k8s/dev/config/dev-config.yaml#L25
-
-In some dev runs, the COS stack receives a different IP address on startup, causing the config to point to the wrong endpoint.
+The dev configuration should determine or receive the current IP dynamically instead of relying on a fixed value.
 
 ## Suggested approach
 
-1. Inspect how the dev deployment is started and how `dev-config.yaml` is consumed.
-2. Identify where the current Prometheus/Grafana IP can be discovered during startup.
-3. Replace the hard-coded IP with a dynamic value, for example by:
-   - using Kubernetes service DNS names if available, or
-   - generating the dev config from a template during startup, or
-   - reading the current service/load-balancer IP in the dev setup script.
-4. Update any dev setup documentation to describe the new behavior.
-5. Test by restarting the dev environment and confirming the generated/used endpoint matches the current COS stack IP.
+1. Inspect the current hard-coded values in the dev config.
+2. Identify how the dev environment starts Prometheus and Grafana and where their IP address can be discovered.
+3. Replace the hard-coded IP with a dynamic value. Possible approaches include:
+   - using Kubernetes service DNS names if the services are reachable inside the cluster;
+   - templating the config from an environment variable;
+   - generating the config during startup by querying the current service or node IP.
+4. Update any dev deployment scripts so they provide or generate the correct value.
+5. Update dev documentation if developers need to pass a new variable or run a new command.
 
 ## Files to look at
 
 - `deployment/k8s/dev/config/dev-config.yaml`
 - `deployment/k8s/dev/`
-- Any dev startup scripts or README files under `deployment/k8s/dev/`
+- Any scripts under `deployment/k8s/dev/` that create or apply the dev configuration
+- Dev setup documentation, if present
 
 ## Acceptance criteria
 
-- Prometheus and Grafana endpoints are no longer tied to a hard-coded IP in the committed dev config.
-- The dev environment uses the correct COS stack IP/address for the current run.
-- Restarting the dev environment with a different assigned IP still works.
-- Dev setup documentation is updated if the workflow changes.
+- Prometheus and Grafana IPs are no longer hard-coded in the dev config.
+- The dev deployment uses the correct address for the current run.
+- Starting dev mode works when the COS stack receives a different IP than before.
+- Any new configuration or environment variable is documented.
 
 ## Resources
 
 - Current hard-coded config location: https://github.com/canonical/microcloud-cluster-manager/blob/main/deployment/k8s/dev/config/dev-config.yaml#L25
 - Kubernetes Services documentation: https://kubernetes.io/docs/concepts/services-networking/service/",The [dev config](https://github.com/canonical/microcloud-cluster-manager/blob/main/deployment/k8s/dev/config/dev-config.yaml#L25) hard codes the IP of Prometheus and Grafana. Sometimes another IP addr
-3,Rewrite `test_utils` using feature files,https://github.com/canonical/cos-configuration-k8s-operator/issues/156,canonical/cos-configuration-k8s-operator,Type: Enhancement; Status: Triage,0,2026-03-27,Rewriting a test utility with feature files is bounded but the expected approach is underspecified and would need guidance.,,"### Enhancement Proposal
+4,Auto-format markdown,https://github.com/canonical/observability-stack/issues/285,canonical/observability-stack,,0,2026-04-21,Adding or evaluating a markdown formatter is a contained tooling/docs task that a newcomer could handle with moderate guidance.,"## Context
+
+The Observability Stack documentation is built with Sphinx and includes Markdown content. Consistent Markdown formatting makes reviews easier and keeps the published docs style consistent.
+
+## Problem
+
+The current Markdown linting/formatting setup from the Sphinx starter pack does not enforce much formatting. We should evaluate adding an auto-formatting tool such as [`rumdl`](https://pypi.org/project/rumdl/) and wire it into the existing docs review workflow.
+
+## Suggested approach
+
+1. Inspect the existing docs lint/review setup.
+2. Try running `rumdl` locally against the documentation Markdown files.
+3. Add configuration for `rumdl` if needed, for example in `pyproject.toml`.
+4. Add a command to the existing docs review script/workflow so contributors can run it easily.
+5. Apply the formatter to existing Markdown files if the changes are reasonable.
+6. Document the new command if there is a contributor docs section for docs checks.
+
+## Files to look at
+
+- `pyproject.toml`
+- `tox.ini` or other test/lint configuration files
+- `.github/workflows/`
+- `docs/`
+- Any existing `review-docs` script or workflow file
+
+## Acceptance criteria
+
+- A Markdown formatter or stronger Markdown lint command is added to the project tooling.
+- The command can be run locally by contributors.
+- The docs CI/review workflow uses the new command, or the reason for not adding it to CI is documented.
+- Existing Markdown files are formatted consistently, or any skipped formatting is explained.
+
+## Resources
+
+- [`rumdl` on PyPI](https://pypi.org/project/rumdl/)
+- Related issue: https://github.com/canonical/sphinx-docs-starter-pack/issues/411","The markdown linter from the sphinx starter pack isn't doing much.
+We can consider https://pypi.org/project/rumdl/
+
+Related:
+- https://github.com/canonical/sphinx-docs-starter-pack/issues/411
+
+
+> This"
+4,The default size of storage_directive for mimir in the terraform module for COS (non lite) is not enough,https://github.com/canonical/observability-stack/issues/251,canonical/observability-stack,,0,2026-04-13,Adjusting the default Mimir storage size in the Terraform module appears to be a focused configuration change with a clear user-facing problem.,"## Context
+
+The Observability Stack provides Terraform modules for deploying COS components, including Mimir for metrics storage. Mimir uses persistent volumes, and the default volume size should be large enough for a basic first deployment.
+
+## Problem
+
+When following the Canonical Kubernetes sandbox installation tutorial and integrating the Kubernetes cluster with COS, the default Mimir PVC size is `1GB`. These volumes fill up almost immediately, causing Mimir to stop collecting metrics and creating avoidable troubleshooting for new users.
+
+## Suggested approach
+
+1. Find where the Terraform module defines the default Mimir storage size or `storage_directive`.
+2. Check whether the value is specific to non-lite COS deployments.
+3. Increase the default to a safer value, or make the documentation clearly explain that users should override it for Kubernetes integrations.
+4. Update any variable descriptions, examples, or generated docs that mention the default.
+5. If tests or examples exist for the Terraform module, update them to match the new default.
+
+## Files to look at
+
+- `terraform/`
+- `terraform/modules/`
+- Files containing `mimir`, `storage_directive`, `PVC`, or `volume`
+- `docs/` pages related to COS installation and Terraform deployment
+
+## Acceptance criteria
+
+- The default Mimir storage size for non-lite COS is increased to a reasonable value, or the docs clearly instruct users how to set an appropriate value.
+- The Terraform variable description and examples are consistent with the new behavior.
+- Existing Terraform validation/tests pass.
+- The Canonical Kubernetes sandbox tutorial no longer leads users to an immediately full Mimir PVC by default.
+
+## Resources
+
+- Installation tutorial: https://documentation.ubuntu.com/observability/track-2/tutorial/installation/cos-canonical-k8s-sandbox/
+- Terraform documentation: https://developer.hashicorp.com/terraform/docs","When deploying COS as described in the [document](https://documentation.ubuntu.com/observability/track-2/tutorial/installation/cos-canonical-k8s-sandbox/), and integrate with the underlying kubernetes"
+4,docs: add section about modifying labels using resourceprocessor,https://github.com/canonical/observability-stack/issues/239,canonical/observability-stack,,0,2026-04-06,Adding a short documentation section based on an existing upstream resourceprocessor reference is well-scoped and approachable.,"## Context
+
+The Observability documentation includes a how-to guide for selectively dropping telemetry with the OpenTelemetry Collector. OpenTelemetry Collector processors can also modify resource attributes, which is useful when filtering, normalizing, or reducing telemetry data.
+
+## Problem
+
+The current `selectively drop telemetry` guide does not mention the OpenTelemetry Collector `resourceprocessor`, which can add, update, delete, or hash resource labels/attributes. A short section should explain when to use it and provide a minimal example.
+
+## Suggested approach
+
+1. Open the existing guide about selectively dropping telemetry with OTel Collector.
+2. Add a short section introducing `resourceprocessor`.
+3. Include a small YAML example showing how to delete or modify a resource attribute.
+4. Explain how this differs from dropping entire telemetry records.
+5. Link to the upstream `resourceprocessor` documentation.
+6. Build or preview the docs to verify formatting.
+
+## Files to look at
+
+- `docs/how-to/selectively-drop-telemetry-otelcol.md` or similarly named file
+- Other OpenTelemetry Collector docs under `docs/how-to/`
+
+## Acceptance criteria
+
+- The guide contains a new section about modifying resource labels/attributes with `resourceprocessor`.
+- The section includes a valid, minimal configuration example.
+- The upstream OpenTelemetry documentation is linked.
+- The documentation builds without warnings.
+
+## Resources
+
+- Current page: https://documentation.ubuntu.com/observability/latest/how-to/selectively-drop-telemetry-otelcol/
+- OpenTelemetry Collector `resourceprocessor`: https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/resourceprocessor/README.md","There's a core processor - [resourceprocessor](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/resourceprocessor/README.md) - for adding/dropping resource labels,"
+4,docs: upgrade steps lack detail,https://github.com/canonical/observability-stack/issues/214,canonical/observability-stack,,0,2026-03-18,This is a documentation improvement with a clear need for more explicit upgrade commands and steps.,"## Context
+
+The Observability documentation includes upgrade instructions for users moving between COS versions and charm tracks. Upgrade guides should be explicit enough for users who are not already familiar with Juju charm refresh workflows.
+
+## Problem
+
+The current upgrade instructions contain high-level statements such as `Refresh all track 1 charms so they point to the latest revision on 1/stable`, but they do not show the exact Juju commands or expected workflow. This makes the guide difficult to follow, especially for COS Lite upgrades and COS Lite to COS 2 migrations.
+
+## Suggested approach
+
+1. Locate the upgrade instructions page in the docs.
+2. Identify vague instructions that should include concrete commands.
+3. Add a worked example for a typical COS Lite deployment, including commands such as `juju status`, `juju refresh`, and any required channel arguments.
+4. Add brief notes about checking application status after each step.
+5. For COS Lite to COS 2 migration, add a clearer sequence of steps or a link to a detailed migration guide if one exists.
+6. Build the docs and check that command blocks render correctly.
+
+## Files to look at
+
+- `docs/` files containing `Upgrade instructions`
+- Likely locations: `docs/how-to/`, `docs/tutorial/`, or `docs/explanation/`
+- Any existing COS Lite or COS 2 migration pages under `docs/`
+
+## Acceptance criteria
+
+- Upgrade instructions include concrete Juju command examples.
+- The guide explains how to verify progress with `juju status`.
+- COS Lite upgrade steps are understandable to a user unfamiliar with charm track refreshes.
+- COS Lite to COS 2 migration guidance is more explicit, or links to a detailed guide.
+- Documentation builds successfully.
+
+## Resources
+
+- Juju charm refresh documentation: https://juju.is/docs/juju/manage-charms#heading--upgrade-a-charm
+- Juju status command documentation: https://juju.is/docs/juju/juju-status","*Please describe the question or issue you're facing with ""Upgrade instructions - Observability documentation"".*
+
+The instructions lack specific steps to guide users on the very specific upgrade steps"
+4,Docs: update the `Integrating COS Lite with uncharmed workloads` to use Otelcol instead of GA,https://github.com/canonical/observability-stack/issues/197,canonical/observability-stack,,0,2026-03-04,Updating an existing document from Grafana Agent to Otelcol has a clear scope and can follow related migration documentation.,"## Context
+
+The Observability Stack documentation explains how to connect COS Lite to workloads that are not deployed as Juju charms. These docs currently focus on Grafana Agent.
+
+## Problem
+
+Grafana Agent is being replaced by the OpenTelemetry Collector in this documentation. The guide `Integrating COS Lite with uncharmed workloads` should be updated to describe the Otelcol-based approach instead of the Grafana Agent-based one.
+
+## Suggested approach
+
+1. Open the existing guide and identify sections that mention Grafana Agent, GA config, or GA deployment steps.
+2. Compare with the existing migration guide from Grafana Agent to OpenTelemetry Collector.
+3. Replace Grafana Agent instructions with equivalent Otelcol instructions.
+4. Update example configuration snippets, commands, and terminology.
+5. Keep any still-valid COS Lite concepts, such as remote write, scraping, and relation endpoints.
+6. Build or preview the docs and check for broken links.
+
+## Files to look at
+
+- `docs/how-to/integrating-cos-lite-with-uncharmed-applications*`
+- `docs/how-to/migrate-gagent-to-otelcol*`
+- Any shared snippets under `docs/` that mention Grafana Agent
+
+## Acceptance criteria
+
+- The guide uses OpenTelemetry Collector as the recommended path.
+- Grafana Agent is not presented as the primary/current solution.
+- All commands and configuration examples are updated and internally consistent.
+- The documentation builds successfully.
+
+## Resources
+
+- Current published page: https://documentation.ubuntu.com/observability/track-2/how-to/integrating-cos-lite-with-uncharmed-applications/
+- Migration guide: https://documentation.ubuntu.com/observability/latest/how-to/migrate-gagent-to-otelcol/
+- OpenTelemetry Collector docs: https://opentelemetry.io/docs/collector/","https://documentation.ubuntu.com/observability/track-2/how-to/integrating-cos-lite-with-uncharmed-applications/
+
+The doc currently focused on Grafana Agent. We should update it to mention Otelcol."
+4,"Missing `title`,  `tagline` and `description` configs in `catalogue` in `cos-lite` terraform module",https://github.com/canonical/observability-stack/issues/189,canonical/observability-stack,,0,2026-02-16,Adding missing catalogue configuration fields to the Terraform module appears well-defined and limited in scope.,"## Context
+
+The `cos-lite` Terraform module deploys the COS Lite observability stack, including the Catalogue charm. Catalogue shows user-facing metadata such as title, tagline, and description in its UI.
+
+## Problem
+
+The Terraform module does not currently configure Catalogue with `title`, `tagline`, and `description`, so the UI shows incomplete/default information. The module should set these Catalogue charm configs.
+
+## Suggested approach
+
+1. Locate the Terraform module that deploys COS Lite.
+2. Find the `juju_application` or equivalent resource for the `catalogue` application.
+3. Add configuration for `title`, `tagline`, and `description`.
+4. Prefer existing COS Lite/Catalogue wording if it already exists in a bundle, README, or docs.
+5. If module variables are used for charm config, add variables with sensible defaults and document them.
+6. Run `terraform fmt` on the modified Terraform files.
+
+## Files to look at
+
+- `terraform/cos-lite/`
+- `terraform/cos-lite/main.tf`
+- `terraform/cos-lite/variables.tf`
+- `terraform/cos-lite/README.md` or generated module docs, if present
+
+## Acceptance criteria
+
+- The `catalogue` application receives non-empty `title`, `tagline`, and `description` config values when deployed through the Terraform module.
+- The values match existing COS Lite wording where available.
+- Any new variables are documented and have defaults.
+- Terraform files are formatted with `terraform fmt`.
+
+## Resources
+
+- Terraform Juju provider docs: https://registry.terraform.io/providers/juju/juju/latest/docs
+- Catalogue charm page: https://charmhub.io/catalogue","we see this:
+
+<img width=""630"" height=""304"" alt=""Image"" src=""https://github.com/user-attachments/assets/1ae9779d-6767-4899-8336-de5b64bf5cf4"" />
+
+
+But we should see this:
+
+<img width=""703"" height=""251"
+4,Add troubleshooting guide for timeseries with NaN,https://github.com/canonical/observability-stack/issues/164,canonical/observability-stack,,0,2025-12-05,"This is a documentation-focused issue with a clear troubleshooting topic, though some Prometheus/COS context may be needed.","## Context
+
+COS Lite uses Prometheus-compatible metrics and Grafana dashboards. Sometimes time series contain `NaN` values, which can make PromQL queries and dashboard aggregations confusing.
+
+## Problem
+
+There is no troubleshooting guide explaining how to identify and handle time series containing `NaN` values. We should add a short guide with symptoms, likely causes, and practical PromQL workarounds.
+
+Example query affected by this issue:
+
+```promql
+avg_over_time(
+  juju_apiserver_request_duration_seconds{
+    juju_controller=""$controller"",
+    juju_unit=~""$controller_host"",
+    method=""FullStatus"",
+    quantile=""0.99"",
+    error_code!~""not found|unauthorized access""
+  }[5m]
+)
+```
+
+## Suggested approach
+
+1. Add a new troubleshooting page about `NaN` values in Prometheus/Grafana time series.
+2. Explain common causes, such as no samples for a quantile, division by zero, stale/missing data, or exporters emitting `NaN`.
+3. Show how to inspect the raw metric and labels before applying aggregation.
+4. Include safe example approaches, such as filtering out `NaN` instant vectors with comparisons like `metric == metric`, using recording rules where appropriate, or changing the query to avoid aggregating invalid samples.
+5. Mention that histogram-based metrics are often preferable to precomputed quantile summaries when doing aggregation.
+6. Add the page to the troubleshooting navigation.
+
+## Files to look at
+
+- `docs/troubleshooting/`
+- `docs/index.md` or the documentation navigation file
+- Existing troubleshooting pages for style and structure
+
+## Acceptance criteria
+
+- A troubleshooting page for time series with `NaN` values exists.
+- The page includes symptoms, likely causes, diagnosis steps, and at least one PromQL example.
+- The page is linked from the troubleshooting section/navigation.
+- The documentation builds successfully.
+
+## Resources
+
+- Prometheus querying basics: https://prometheus.io/docs/prometheus/latest/querying/basics/
+- Prometheus functions: https://prometheus.io/docs/prometheus/latest/querying/functions/
+- Prometheus histograms and summaries: https://prometheus.io/docs/practices/histograms/","Via @jameinel via [matrix](https://matrix.to/#/!nHXpRkcSNJHlHdUGbQ:ubuntu.com/$M3ZLzis0qY0p56nWg8AgV-8T_W9WgZIBzlACtm2wFX8?via=ubuntu.com&via=matrix.org&via=mozilla.org).
+
+When timeseries have `NaN`s,"
+4,docs: update `Gateway address unavailable` doc to include troubleshooting steps for CK8s,https://github.com/canonical/observability-stack/issues/134,canonical/observability-stack,,0,2025-10-28,"This is a focused documentation update that extends an existing troubleshooting page, with manageable scope if CK8s commands are provided or discoverable.","## Context
+
+The Observability Stack documentation includes troubleshooting guides for common deployment issues. The page for `Gateway address unavailable` currently focuses on MicroK8s/Mk8s commands.
+
+## Problem
+
+Update the `Gateway address unavailable` troubleshooting page so users running Canonical Kubernetes/CK8s can follow equivalent troubleshooting steps.
+
+## Suggested approach
+
+1. Find the existing troubleshooting page in the docs source.
+2. Identify the Mk8s-specific commands and assumptions.
+3. Add CK8s equivalents next to the existing Mk8s instructions, or split the steps into Mk8s and CK8s subsections.
+4. Make sure the page explains when to use each set of commands.
+5. Build or preview the docs locally if possible and check formatting.
+
+## Files to look at
+
+- `docs/how-to/troubleshooting/`
+- The source file for `troubleshoot-gateway-address-unavailable`
+
+## Acceptance criteria
+
+- The troubleshooting guide includes clear CK8s instructions.
+- Existing Mk8s instructions are preserved.
+- Users can distinguish which commands apply to Mk8s vs CK8s.
+- Documentation builds without formatting or link errors.
+
+## Resources
+
+- Existing page: https://documentation.ubuntu.com/observability/latest/how-to/troubleshooting/troubleshoot-gateway-address-unavailable/
+- Canonical Kubernetes documentation: https://documentation.ubuntu.com/canonical-kubernetes/","*Please describe the question or issue you're facing with ""Troubleshooting Gateway address unavailable - Observability documentation"".*
+The current doc on `Troubleshooting Gateway address unavailable`"
+4,charm-update-libs fails on repositories with issues disabled,https://github.com/canonical/observability/issues/420,canonical/observability,,0,2026-02-20,The workflow failure mode is clear and the likely fix is a bounded GitHub Actions change with moderate guidance.,"## Context
+
+The `charm-update-libs.yml` GitHub Actions workflow helps charm repositories keep their charm libraries up to date. Some repositories use this workflow even when GitHub Issues are disabled because issues are tracked elsewhere.
+
+## Problem
+
+The workflow currently fails when it runs in a repository with GitHub Issues disabled. This prevents those repositories from using the library update workflow.
+
+## Suggested approach
+
+1. Find the step in the workflow that calls `gh issue list` or otherwise checks GitHub Issues.
+2. Update the step so the workflow does not fail only because issues are disabled.
+3. A good minimal fix is:
+   - Run the issue check and capture the exit code/output.
+   - If the output indicates that issues are disabled, emit a GitHub Actions warning and continue.
+   - For other unexpected `gh issue list` failures, keep failing the workflow.
+4. If the workflow is reusable, consider adding an optional input such as `check-issues` or `create-issues`, defaulting to the current behavior.
+5. Test the updated shell/YAML logic as much as possible by running the relevant command or using a workflow syntax check.
+
+## Files to look at
+
+- `.github/workflows/charm-update-libs.yml`
+- `.github/workflows/charm-update-libs.yaml`
+- Any scripts referenced by the charm update libs workflow
+
+## Acceptance criteria
+
+- Repositories with GitHub Issues enabled keep the current behavior.
+- Repositories with GitHub Issues disabled no longer fail only because issues are disabled.
+- The workflow emits a clear warning when it skips issue-related behavior.
+- Unexpected GitHub CLI errors still fail the workflow.
+- Workflow YAML remains valid.
+
+## Resources
+
+- GitHub Actions workflow syntax: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions
+- GitHub Actions workflow commands, including warnings: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions
+- GitHub CLI `gh issue list`: https://cli.github.com/manual/gh_issue_list","There are some repositories for which issues are tracked outside of GitHub (e.g., private repositories). These issues could still benefit from the `charm-update-libs.yml` workflow, but fail to run it "
+4,Should all local charm promote workflows allow a track input?,https://github.com/canonical/observability/issues/419,canonical/observability,,0,2026-02-19,"Adding a track input to local promotion workflows is a clear and limited YAML change, assuming the affected workflows are easy to find.","## Context
+
+This repository contains shared GitHub Actions workflows used by charm repositories, including workflows that promote charm releases between Charmhub risks such as `edge`, `beta`, `candidate`, and `stable`.
+
+## Problem
+
+Some local manually dispatched promote workflows do not expose a `track` input. As a result, when they call the central reusable promote workflow, the default track is used and maintainers cannot promote charms on another track such as `2`.
+
+## Suggested approach
+
+1. Search for local manually dispatched promote workflows.
+2. Compare them with the central reusable promote workflow to confirm the expected input name and default value for `track`.
+3. Add a `workflow_dispatch` input for `track` to each relevant local promote workflow.
+4. Pass the selected `track` value through to the central reusable workflow in the `with:` block.
+5. Keep the existing default behavior unchanged when no track is provided.
+6. Validate the YAML syntax.
+
+Example shape, adjusted to match the existing workflow:
+
+```yaml
+on:
+  workflow_dispatch:
+    inputs:
+      track:
+        description: Charmhub track to promote on, for example latest or 2
+        required: false
+        default: latest
+        type: string
+
+jobs:
+  promote:
+    uses: canonical/observability/.github/workflows/<central-promote-workflow>.yml@main
+    with:
+      track: ${{ inputs.track }}
+```
+
+## Files to look at
+
+- `.github/workflows/`
+- Promote-related workflow files, for example files with `promote` in the name
+- The central reusable promote workflow called by the local workflows
+
+## Acceptance criteria
+
+- Every relevant manually dispatched local promote workflow has a `track` input.
+- The selected `track` value is passed to the central promote workflow.
+- Existing default behavior is preserved if the user does not provide a track.
+- Workflow YAML is valid.
+- A maintainer can manually dispatch a promote workflow for a non-default track such as `2`.
+
+## Resources
+
+- GitHub Actions manual workflow inputs: https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_dispatch
+- GitHub Actions reusable workflows: https://docs.github.com/en/actions/using-workflows/reusing-workflows
+- Charmhub channels and tracks: https://juju.is/docs/sdk/charmcraft-channels","In order to promote the charm on track 2 from edge to beta, beta to candidate, and candidate to stable, we can't rely on the current local promote workflows which eventually call the central one store"
+4,Remove `Clean worker caches` step in `_charm-quality-checks.yaml`,https://github.com/canonical/observability/issues/408,canonical/observability,,0,2025-12-08,"Removing or making a single workflow cleanup step configurable is a small, well-scoped CI change.","## Context
+
+This repository contains shared GitHub Actions workflows used by Canonical Observability charms. The `_charm-quality-checks.yaml` workflow runs quality checks for charm repositories.
+
+## Problem
+
+The workflow currently contains a `Clean worker caches` step that was added as a temporary workaround for GitHub-hosted runners running out of disk space during heavy integration tests. Now that caller workflows can use self-hosted runners, this cleanup step should be removed or made configurable so it does not always run.
+
+## Suggested approach
+
+1. Open the reusable workflow `.github/workflows/_charm-quality-checks.yaml`.
+2. Find the step named `Clean worker caches`.
+3. Decide on the smallest appropriate change:
+   - remove the step entirely, or
+   - add a workflow input such as `clean-worker-caches` with a default value and run the step only when that input is enabled.
+4. If you add an input, document it in the workflow inputs section and update any relevant README/docs if they list workflow options.
+5. Check the workflow syntax locally or by opening a PR and confirming GitHub Actions parses it successfully.
+
+## Files to look at
+
+- `.github/workflows/_charm-quality-checks.yaml`
+- Any README or documentation file that describes reusable workflow inputs, if present
+
+## Acceptance criteria
+
+- The `Clean worker caches` step no longer runs unconditionally.
+- If the step is made configurable, the new input is documented and has a sensible default.
+- Existing charm quality checks still run as before.
+- The workflow is valid GitHub Actions YAML.
+
+## Resources
+
+- GitHub Actions reusable workflows: https://docs.github.com/en/actions/sharing-automations/reusing-workflows
+- GitHub Actions workflow syntax: https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions",The `Clean worker caches` step in `_charm-quality-checks.yaml` was added to prevent the disk space of the runner from filling up for the GH runners. This was a temporary fix to unblock a few failing C
+4,Add test coverage checks to CI,https://github.com/canonical/observability/issues/368,canonical/observability,,0,2025-07-24,"Adding coverage reporting to CI is a well-scoped workflow enhancement with referenced guidance, though it requires some familiarity with GitHub Actions.","## Context
+
+This repository provides shared CI workflows for Canonical Observability projects. These workflows help reviewers assess code quality before merging pull requests.
+
+## Problem
+
+CI should run test coverage checks and make coverage information visible during pull request review. This will help reviewers understand whether changes are adequately tested.
+
+## Suggested approach
+
+1. Read the decision notes linked below to understand the intended coverage behavior.
+2. Identify the workflow that runs unit tests, most likely in `.github/workflows/`.
+3. Update the test command to generate coverage output.
+4. Add a step to publish or display the coverage result in a reviewer-friendly way, such as:
+   - a job summary,
+   - a PR comment,
+   - an uploaded artifact,
+   - or another method specified in the linked decision notes.
+5. Make sure the workflow still fails when tests fail.
+6. If a minimum coverage threshold is required by the decision notes, add it clearly and document it.
+
+## Files to look at
+
+- `.github/workflows/`
+- Test-related workflow files, especially unit test or charm quality workflows
+- Project documentation describing CI behavior, if present
+
+## Acceptance criteria
+
+- CI runs tests with coverage enabled.
+- Coverage results are visible to PR reviewers.
+- Test failures still fail the CI job.
+- Any required coverage threshold from the decision notes is implemented.
+- Workflow YAML is valid.
+
+## Resources
+
+- Decision notes: https://github.com/canonical/observability-team/issues/116#issuecomment-3113751641
+- GitHub Actions job summaries: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#adding-a-job-summary
+- Pytest coverage plugin: https://pytest-cov.readthedocs.io/",We want CI to run test coverage and make it visible to reviewers during review.  See https://github.com/canonical/observability-team/issues/116#issuecomment-3113751641 for detailed decisions.  
+4,Watch other files than rockcraft.yaml to trigger a PR in OCI Factory,https://github.com/canonical/observability/issues/365,canonical/observability,,0,2025-07-22,"The task is a clear workflow condition change to watch additional files, making it suitable for a newcomer with light CI guidance.","## Context
+
+This repository includes a workflow that opens pull requests in OCI Factory when rock sources change. OCI Factory then builds or updates OCI images for rocks.
+
+## Problem
+
+The current workflow only checks whether `rockcraft.yaml` changed before opening a PR in OCI Factory. Some rocks produce a different image when other files change too. For example, in `opentelemetry-collector-rock`, changes to `manifest.yaml` can affect the produced OCI image.
+
+The workflow should be able to watch additional files, not just `rockcraft.yaml`.
+
+## Suggested approach
+
+1. Open `.github/workflows/rock-release-oci-factory.yaml`.
+2. Find the step or condition that checks for changes to `rockcraft.yaml`.
+3. Update it so additional files can trigger the OCI Factory PR.
+   - A simple first implementation could include both `rockcraft.yaml` and `manifest.yaml`.
+   - A more flexible implementation could accept a configurable list of watched files or patterns.
+4. Preserve existing behavior for rocks that only need `rockcraft.yaml`.
+5. Check spelling carefully: the file is `rockcraft.yaml`; the example additional file is likely `manifest.yaml`.
+6. Validate the workflow YAML.
+
+## Files to look at
+
+- `.github/workflows/rock-release-oci-factory.yaml`
+
+## Acceptance criteria
+
+- Changes to `rockcraft.yaml` still trigger the OCI Factory PR workflow.
+- Changes to additional configured files, such as `manifest.yaml`, can also trigger the workflow.
+- The solution works for rocks that do not have extra watched files.
+- Workflow YAML is valid.
+
+## Resources
+
+- Current workflow reference: https://github.com/canonical/observability/blob/d5dd87e269baf7e7a3a8c44e7d1441945cab1bfd/.github/workflows/rock-release-oci-factory.yaml#L42
+- GitHub Actions workflow syntax: https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions
+- GitHub Actions path filters: https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#onpushpull_requestpull_request_targetpathspaths-ignore","Right now, our workflow to open a PR in OCI factory is [only verifying the modification of `rockcraf.yaml` file](https://github.com/canonical/observability/blob/d5dd87e269baf7e7a3a8c44e7d1441945cab1bf"
+4,bug: Integration test matrix fails when no itests exist,https://github.com/canonical/observability/issues/304,canonical/observability,,0,2025-04-17,The bug has a clear failure mode and likely requires a focused GitHub Actions fix for empty integration-test matrices.,"## Context
+
+This repository provides reusable GitHub Actions workflows used by Canonical Observability charm repositories. One of these workflows runs integration tests by building a matrix of available integration test suites.
+
+## Problem
+
+The reusable charm quality workflow fails when a charm repository has no integration tests.
+
+Example failure from `cos-proxy-operator`:
+
+> Matrix vector `suite` does not contain any values
+
+This happens because `cos-proxy-operator` has no integration test folder, so the generated `suite` matrix is empty.
+
+## Suggested approach
+
+1. Open the reusable workflow that builds the integration test matrix.
+2. Find where the `suite` matrix value is generated.
+3. Add handling for the case where no integration test suites are found.
+4. Ensure the `integration-test` job is skipped cleanly when there are no suites, instead of creating an empty matrix.
+5. Test the workflow logic with both cases:
+   - a repository with integration tests
+   - a repository without integration tests
+
+One possible solution is to add a boolean output such as `has-integration-tests` and guard the integration test job with an `if:` condition.
+
+## Files to look at
+
+- `.github/workflows/_charm-quality-checks.yaml`
+- The integration test matrix setup near the current `suite` matrix definition
+
+## Acceptance criteria
+
+- Repositories with no integration tests do not fail during workflow evaluation.
+- The integration test job is skipped when no integration suites exist.
+- Repositories with integration tests still run the expected matrix.
+- The fix is covered by a clear PR description with links to an example passing run if possible.
+
+## Resources
+
+- [Failing workflow example](https://github.com/canonical/cos-proxy-operator/actions/runs/14472690856)
+- [Current workflow location](https://github.com/canonical/observability/blob/main/.github/workflows/_charm-quality-checks.yaml)
+- [GitHub Actions matrix documentation](https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs)","We found [this error](https://github.com/canonical/cos-proxy-operator/actions/runs/14472690856) in cos-proxy which states:
+> Error when evaluating 'strategy' for job 'integration-test'. canonical/obse"
+4,Add a lint step to verify uv.lock is updated when new dependencies are added,https://github.com/canonical/observability/issues/297,canonical/observability,,0,2025-04-17,"The requested lint check is clearly described and bounded, though it may need some guidance around dependency parsing and lockfile validation.","## Context
+
+Many charm repositories use `pyproject.toml` to declare Python dependencies and `uv.lock` to pin the resolved dependency versions. When dependencies change, the lock file must be updated by running `tox -e lock`.
+
+## Problem
+
+It is easy to add or change dependencies in `pyproject.toml` and forget to update `uv.lock`. This can cause CI or later development environments to use stale dependency information.
+
+Add a lint/check step that detects dependency changes and verifies that `uv.lock` is up to date.
+
+## Suggested approach
+
+1. Identify where charm quality checks are defined in this repository.
+2. Add a CI step that runs on pull requests.
+3. If `pyproject.toml` was changed, determine whether dependency sections changed.
+4. When dependencies changed, run:
+
+   ```bash
+   tox -e lock
+   git diff --exit-code uv.lock
+   ```
+
+5. If `uv.lock` changes after running `tox -e lock`, fail the job with a helpful message telling the contributor to commit the updated lock file.
+6. Make sure PRs that change unrelated parts of `pyproject.toml` do not fail unnecessarily, if practical.
+
+A simple first implementation may check any `pyproject.toml` change and run the lock verification. This is acceptable if the behavior is documented clearly.
+
+## Files to look at
+
+- `.github/workflows/_charm-quality-checks.yaml`
+- Any existing reusable lint workflow files under `.github/workflows/`
+- `tox.ini`
+- `pyproject.toml`
+- `uv.lock`
+
+## Acceptance criteria
+
+- CI verifies that `uv.lock` is current when dependencies in `pyproject.toml` are changed.
+- If `tox -e lock` modifies `uv.lock`, the check fails with a clear error message.
+- If the lock file is already up to date, the check passes.
+- Existing charm quality checks continue to work.
+
+## Resources
+
+- [uv documentation](https://docs.astral.sh/uv/)
+- [tox documentation](https://tox.wiki/)
+- [GitHub Actions documentation](https://docs.github.com/en/actions)","When adding a new dependency to a `pyproject.toml` for a charm, you need to remember to run `tox -e lock` to update the lockfile. It would be useful to have a step that does the following lint check:
+"
+4,"Rock CI: first pack the rock, then install the rest of the deps",https://github.com/canonical/observability/issues/264,canonical/observability,,0,2025-02-11,"Reordering CI steps to pack the rock earlier is a clear, small workflow optimization with direct links to the relevant lines.","## Context
+
+The rock pull request workflow builds and validates ROCKs, which are OCI images built with Rockcraft. The workflow currently installs several dependencies before attempting to pack the rock.
+
+## Problem
+
+If `rockcraft pack` fails, the workflow only discovers the failure after spending several minutes installing dependencies. This slows down feedback for contributors.
+
+Update the workflow so it packs the rock as early as possible, before installing dependencies that are only needed by later validation steps.
+
+## Suggested approach
+
+1. Open the rock pull request workflow.
+2. Identify the steps that install dependencies before the rock is packed.
+3. Determine which dependencies are strictly required for `rockcraft pack`.
+4. Move the pack step earlier in the job, immediately after the required setup steps.
+5. Leave later dependency installation steps in place for tests or checks that need them.
+6. Run or inspect a workflow execution to confirm the rock is packed before the extra dependency installation.
+
+Be careful not to move the pack step before required setup such as checkout, Rockcraft installation, or authentication/setup steps needed for packing.
+
+## Files to look at
+
+- `.github/workflows/rock-pull-request.yaml`
+- The steps around the current dependency installation and rock packing logic
+
+## Acceptance criteria
+
+- The workflow attempts to pack the rock before installing dependencies that are only needed later.
+- If packing fails, the workflow fails quickly.
+- Later workflow steps still have the dependencies they need.
+- Existing behavior is preserved for successful builds.
+
+## Resources
+
+- [Current workflow lines referenced in the issue](https://github.com/canonical/observability/blob/3b9dbca8c50bf1c7a51732a36a70a16fd0df3066/.github/workflows/rock-pull-request.yaml#L51-L57)
+- [Example slow failing run](https://github.com/canonical/grafana-rock/actions/runs/13262644311/job/37022566193)
+- [Rockcraft documentation](https://documentation.ubuntu.com/rockcraft/)","Currently, if packing the rock fails, we [discover](https://github.com/canonical/grafana-rock/actions/runs/13262644311/job/37022566193) it only after 5 minutes of installing dependencies.
+
+https://git"
+4,Consider linting alert rules with cos-tool rather than promtool,https://github.com/canonical/observability/issues/263,canonical/observability,,0,2025-02-04,"The task appears limited to updating a specific CI workflow to use a different linting tool, with a clear target file.","## Context
+
+This repository contains shared CI workflows for Canonical observability charms. The `_charm-quality-checks.yaml` workflow runs quality checks, including validation of Prometheus alert rule files shipped by charms.
+
+## Problem
+
+The workflow currently lints alert rules with `promtool`. We should use `cos-tool` instead, because it is the tool used by the Canonical Observability Stack and understands COS-specific rule validation needs.
+
+## Suggested approach
+
+1. Open the charm quality checks workflow.
+2. Find the step that installs or runs `promtool` for alert rule linting.
+3. Replace it with installation/use of `cos-tool`.
+4. Update the lint command to validate the same alert rule files using `cos-tool`.
+5. Run the workflow or equivalent command locally if possible to confirm the alert rule validation still works.
+6. Remove any now-unused `promtool` installation logic from the workflow.
+
+## Files to look at
+
+- `.github/workflows/_charm-quality-checks.yaml`
+- Any alert rule paths referenced from that workflow, for example charm alert rule directories such as `src/prometheus_alert_rules/` if present
+
+## Acceptance criteria
+
+- The workflow no longer uses `promtool` for alert rule linting.
+- Alert rules are validated with `cos-tool` instead.
+- Existing alert rule files are still checked by CI.
+- The workflow passes successfully on a pull request.
+
+## Resources
+
+- [`cos-tool` repository](https://github.com/canonical/cos-tool)
+- [Prometheus alerting rules documentation](https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/)",The workflow is `_charm-quality-checks.yaml`.
+3,Rewrite `test_utils` using feature files,https://github.com/canonical/cos-configuration-k8s-operator/issues/156,canonical/cos-configuration-k8s-operator,Type: Enhancement; Status: Triage,0,2026-03-27,Rewriting test utilities as feature files has a bounded goal but would require guidance on the project's testing conventions.,,"### Enhancement Proposal
 
 The `test_utils` file was added as part #154. We should experiment with rewriting it using feature files."
-3,chore: update libraries to new major versions,https://github.com/canonical/cos-configuration-k8s-operator/issues/134,canonical/cos-configuration-k8s-operator,,0,2025-09-18,Updating a charm library major version is well-defined but may involve handling breaking API changes and test failures.,,"This issue was created automatically because a new major version was detected for a charm library.
+3,chore: update libraries to new major versions,https://github.com/canonical/cos-configuration-k8s-operator/issues/134,canonical/cos-configuration-k8s-operator,,0,2025-09-18,"Updating a charm library major version is a routine maintenance task, though API changes may require some guidance.",,"This issue was created automatically because a new major version was detected for a charm library.
 
 You should update the following libraries:
 
 - update <b>charms.loki_k8s.v0.loki_push_api</b> to <b>v"
-3,chore: update libraries to new major versions,https://github.com/canonical/cos-configuration-k8s-operator/issues/133,canonical/cos-configuration-k8s-operator,,0,2025-09-17,Updating a charm library major version is well-defined but may involve handling breaking API changes and test failures.,,"This issue was created automatically because a new major version was detected for a charm library.
+3,chore: update libraries to new major versions,https://github.com/canonical/cos-configuration-k8s-operator/issues/133,canonical/cos-configuration-k8s-operator,,0,2025-09-17,"Updating a charm library major version is a routine maintenance task, though API changes may require some guidance.",,"This issue was created automatically because a new major version was detected for a charm library.
 
 You should update the following libraries:
 
 - update <b>charms.loki_k8s.v0.loki_push_api</b> to <b>v"
-3,chore: update libraries to new major versions,https://github.com/canonical/cos-configuration-k8s-operator/issues/94,canonical/cos-configuration-k8s-operator,,0,2024-04-23,Updating a charm library major version is well-defined but may involve handling breaking API changes and test failures.,,"This issue was created automatically because a new major version was detected for a charm library.
+3,chore: update libraries to new major versions,https://github.com/canonical/cos-configuration-k8s-operator/issues/94,canonical/cos-configuration-k8s-operator,,0,2024-04-23,"Updating a charm library major version is a routine maintenance task, though API changes may require some guidance.",,"This issue was created automatically because a new major version was detected for a charm library.
 
 You should update the following libraries:
 
 - update <b>charms.loki_k8s.v0.loki_push_api</b> to <b>v"
+3,Community health files – but not exactly,https://github.com/canonical/observability-team/issues/164,canonical/observability-team,Type: Café Topic,0,2025-12-18,"Updating shared issue/PR template guidance is relatively simple, but the cross-repository process and desired mechanism are unclear enough to require guidance.",,"### What's the topic?
+
+<!-- please tag people that are required for this discussion if any -->
+I wanted to update the issue template to remind issuers that a fix can/should be backported. This also ex"
+3,Reduce alert level of aggregator alerts,https://github.com/canonical/observability-team/issues/163,canonical/observability-team,Type: Café Topic,0,2025-12-11,"Changing alert severity levels may be a small configuration update, but it requires some domain context and stakeholder confirmation.",,"### What's the topic?
+
+Via Marcus Boden via ""Alert rules knowledge sharing"".
+
+> Alerts for resources in gagent should be reduced to “Warning”, and let the charm define their own. Warning is seen in Pa"
+3,docs: Write a doc that explains how alert rules work with in the coordinated workers,https://github.com/canonical/observability-stack/issues/316,canonical/observability-stack,,0,2026-05-01,"This is a documentation task with a clear deliverable, but it requires significant guidance to understand coordinated workers, Loki, and Mimir alert rule flow.",,"Write a doc that explains how Loki HA and Mimir HA receive LogQL and PromQL alert rules from other charms and COS Config, syncs them, and how the workers fetch and evaluate them."
+3,docs: Incomplete information,https://github.com/canonical/observability-stack/issues/250,canonical/observability-stack,,0,2026-04-12,"Improving or removing incomplete documentation is approachable, though the exact expected content is underspecified and would need maintainer direction.",,"Operations & data section lists ""data integrity, retention, and upgrade considerations"" but contains very sketchy information on just one topic ""Data integrity"". We need to either remove the incomplet"
+3,cos-lite tutorial: replace bundles with terraform,https://github.com/canonical/observability-stack/issues/247,canonical/observability-stack,,0,2026-04-10,"The task is documentation-focused and clear, but it requires some familiarity with Terraform-based COS Lite deployment.",,"Juju bundles are deprecated, we have to refactor [this doc](https://github.com/canonical/observability-stack/blob/ed2c00f1bdf46484521dc059d6a0f5e8d4f035c4/docs/tutorial/cos-lite-canonical-k8s-sandbox."
+3,COS AWS: Workflow Regression: model_name vs. model_uuid,https://github.com/canonical/observability-stack/issues/224,canonical/observability-stack,,0,2026-03-26,"The regression has a clearly described cause, but fixing the workflow likely requires some Terraform and Juju output knowledge.",,"The abstracted e2e workflow (`just apply` / `just destroy`) is currently broken. The workflow previously piped the `model_name` from the infrastructure output into the COS Terraform configuration.
+
+##"
+3,COS AWS: old AMI type,https://github.com/canonical/observability-stack/issues/225,canonical/observability-stack,,0,2026-03-26,"The error points to a likely Terraform configuration update, though it requires some AWS EKS and Kubernetes version awareness.",,"When applying the aws infra terraform module, it fails with
+```
+                      │ Error: creating EKS Node Group (cos-cluster:cos-workers): operation error EKS: CreateNodegroup, https response e"
+3,Improve grafana-agent to otelcol migration docs,https://github.com/canonical/observability-stack/issues/212,canonical/observability-stack,,0,2026-03-17,"Improving migration documentation is approachable with guidance, but validation of telemetry may require domain knowledge.",,"From @marcusboden during office hours:
+
+The documentation on migrating from grafana-agent to opentelemetry-collector could benefit from either a scripted version of the migration or at the very least "
+3,Add an `integrating COS with uncharmed workloads` doc,https://github.com/canonical/observability-stack/issues/198,canonical/observability-stack,,0,2026-03-04,"Creating a COS version of an existing document is feasible for a newcomer, but it is broader than a simple edit.",,We should add the COS version of this doc: https://documentation.ubuntu.com/observability/track-2/how-to/integrating-cos-lite-with-uncharmed-applications/
+3,Self-mon relations missing in COS Lite,https://github.com/canonical/observability-stack/issues/196,canonical/observability-stack,,0,2026-03-03,"The missing self-monitoring relations are specifically identified, but implementing them requires some Terraform module and Juju relation knowledge.",,"From @lucabello:
+
+> Guillaume Beuzeboc aksed about how to monitor COS Lite itself, I pointed him at self-monitoring and cos-alerter
+> Some self-monitoring integrations seem to be missing, such as: Tra"
+3,Obtain tls-certificates v4 from charmlibs instead of charmhub,https://github.com/canonical/observability-stack/issues/187,canonical/observability-stack,,0,2026-02-12,"The task is fairly mechanical and has a clear goal, but touching all charms may require guidance on repository structure and charm library usage.",,The charm lib is deprecated. [Ref](https://discourse.charmhub.io/t/the-tls-certificates-v4-library-has-moved-from-charmhub-to-charmlibs/19410). Need to update all charms.
+3,More coverage in COS CI upgrade tests,https://github.com/canonical/observability-stack/issues/173,canonical/observability-stack,,0,2026-01-14,"The requested tests are described with concrete examples, but integration test setup and COS upgrade behavior may be challenging for a newcomer.",,We currently have little coverage in our [COS integration tests](https://github.com/canonical/observability-stack/tree/main/tests/integration/cos). We could significantly improve coverage with 2 addit
+3,Missing Grafana self-mon dashboard,https://github.com/canonical/observability-stack/issues/154,canonical/observability-stack,,0,2025-11-25,"The desired relation and dashboard source are specified, but implementing and validating a new Grafana dashboard integration may require moderate project knowledge.",,In COS Lite we have a Grafana self-mon dashboard or at least a dashboard with some info about the state of Grafana. We do not have this in COS and would be a great addition to the stack. This would re
+3,Update docs to include more details on Opentelemetry Collector,https://github.com/canonical/observability-stack/issues/111,canonical/observability-stack,Type: Documentation,0,2025-10-08,"The issue is documentation-oriented and has a rough outline, but the scope is broad enough that a beginner would need significant guidance.",,"Our docs do mention [migrating from GA to Otelcol](https://documentation.ubuntu.com/observability/latest/how-to/migrate-gagent-to-otelcol/) but given that some users are already trying Otelcol, we sho"
+3,Address cos-proxy -> COS scenario,https://github.com/canonical/observability-stack/issues/33,canonical/observability-stack,,0,2025-06-06,"Documentation-focused with a clear goal, though it requires some domain understanding of COS, Mimir, and OpenStack integration.",,"1. In ""Migrate from COS Lite to COS"" we need to mention that mimir, unlike prometheus, doesn't have a scrape relation, and what needs to be done.
+2. Add a separate ""how to"" for integrating with COS, h"
+3,Enforce conventional commits on PR titles,https://github.com/canonical/observability/issues/396,canonical/observability,,0,2025-10-16,"The goal is understandable, but implementation may require GitHub ruleset knowledge or permissions, so it would need guidance.",,"There is a Github setting in the branch Ruleset that allows to:
+
+> **Restrict commit metadata**
+> Restrict commit author email addresses, committer email addresses, commit message content, and other m"
+3,Use dependency-groups instead of optional-dependencies in charms,https://github.com/canonical/observability/issues/389,canonical/observability,,0,2025-09-15,The packaging change is conceptually clear but may span multiple projects and require guidance to avoid breaking dependency handling.,,"From a café topic, @ca-scribner reported that the way we currently set up our test dependencies in `pyproject.toml` is incorrect.
+
+There's a distinction between:
+- `dependency-groups`: test dependenci"
+3,Update our CI to follow command standardisation in charms,https://github.com/canonical/observability/issues/386,canonical/observability,,0,2025-08-28,"The change is likely limited to CI command updates, but the requirements are vague and depend on an external standardization document.",,"https://docs.google.com/document/d/1GfOTT1Ir-pLAbILUrI4GS9T8AAI8Ni8gpF1Mh67Wx3E/edit?tab=t.0
+example: static is now included into lint"
+3,Terraform lint to compare endpoints to charmcraft.yaml,https://github.com/canonical/observability/issues/357,canonical/observability,,0,2025-07-02,The goal is clear but implementing a comparison between Terraform outputs and charmcraft metadata may require some domain-specific guidance.,,"In addition to `fmt` and `validate` we should confirm a 1:1 match between the `endpoints` output and charmcraft.yaml, to avoid surprise PRs such as https://github.com/canonical/traefik-k8s-operator/pu"
+3,Fix builder version for opentelemetry-collector rock,https://github.com/canonical/observability/issues/292,canonical/observability,,0,2025-04-08,"The issue appears localized to the opentelemetry collector rock update process, but the exact desired behavior may need clarification.",,"We should fix the way we update `rockcraft.yaml`, for instance in opentelemetry-collector not necessarily, every time a new version of `otelcol` is released, the same version of the `builder` package "
+3,Allow runner selection for our CI workflowss,https://github.com/canonical/observability/issues/256,canonical/observability,,0,2025-01-16,"Parameterizing CI runner selection is a reasonably scoped workflow change, though timing and existing CI design may require guidance.",,"As expressed by @skatsaounis in https://github.com/canonical/observability/pull/210, it could be a good idea to allow an easy way to override which runners are used, so that workflows are more easily "
+3,[tf] add variable for module's git branch,https://github.com/canonical/observability/issues/233,canonical/observability,,0,2024-11-26,Adding a Terraform variable for a module branch is conceptually clear but may need guidance because Terraform module sources have limitations around variable interpolation.,,"Would make sense adding a ?ref=main for specifying the branch/revision?
+
+_Originally posted by @amandahla in https://github.com/canonical/observability/pull/227#discussion_r1858677023_
+
+Currently "
+3,Test alert rules with promtool,https://github.com/canonical/observability/issues/232,canonical/observability,,0,2024-11-26,The goal is clear but setting up alert rule tests with promtool may require learning the repository’s rule layout and CI conventions.,,"When introducing a new alert rules, we should have some sort of testing framework.
+
+We could use `promtool` to test the alert rule via a mock time series, as described [here](https://prometheus.io/d"
+3,False positives on CI for major charm library updates,https://github.com/canonical/observability/issues/188,canonical/observability,,0,2024-07-05,"The bug has a clear expected behavior, but fixing the CI logic for charm library versions may require some domain-specific guidance.",,"When a charm has multiple versions of a library, the CI will (wrongly) think that the charm needs to bump the major version.
+
+As noticed in our Tempo coordinator[^1], this is what happens:
+* a char"
+3,update libraries (major bump) gives some false positives,https://github.com/canonical/observability/issues/167,canonical/observability,,0,2024-04-24,"The desired refinement is described clearly, though implementing it requires understanding the existing library update detection logic.",,"see:
+https://github.com/canonical/traefik-k8s-operator/issues/326
+
+In this case, traefik maintains both a v1 and a v2 library. Not just because traefik owns the libs and still has to maintain both,"
+3,Deprecate the AlertRules and RecordingRules classes,https://github.com/canonical/cos-lib/issues/188,canonical/cos-lib,,0,2026-03-23,"Deprecating the classes is straightforward in concept, but updating dependent libraries and preserving compatibility may require guidance.",,"Since this PR:
+- https://github.com/canonical/cos-lib/pull/187
+
+we no longer need the `AlertRules` and `RecordingRules` classes, and they can be deprecated for future removal. The `Rules` class can no"
