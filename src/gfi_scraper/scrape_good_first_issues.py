@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import logging
 import math
@@ -69,6 +70,45 @@ logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
+# Repo filtering helpers
+# ---------------------------------------------------------------------------
+
+
+def load_repos_file(path: Path) -> list[str]:
+    """Load repo names from a file (one per line, # comments, blank lines ignored)."""
+    repos: list[str] = []
+    with path.open("r", encoding="utf-8") as fh:
+        for line in fh:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            repos.append(line)
+    return repos
+
+
+def normalize_repos(repos: list[str], org: str) -> list[str]:
+    """Normalize repo names to owner/repo format. Bare names get org prefix."""
+    normalized: list[str] = []
+    seen: set[str] = set()
+    for repo in repos:
+        if "/" not in repo:
+            repo = f"{org}/{repo}"
+        repo_lower = repo.lower()
+        if repo_lower not in seen:
+            seen.add(repo_lower)
+            normalized.append(repo)
+    return normalized
+
+
+def repos_cache_key(repos: list[str] | None) -> str:
+    """Generate a cache key suffix based on the repo filter."""
+    if not repos:
+        return ""
+    joined = ",".join(sorted(r.lower() for r in repos))
+    return "_" + hashlib.sha256(joined.encode()).hexdigest()[:12]
+
+
+# ---------------------------------------------------------------------------
 # Data model
 # ---------------------------------------------------------------------------
 
@@ -87,6 +127,7 @@ class Issue:
     assignees: list[str]
     labels: list[str]
     body_excerpt: str = ""
+    body_full: str = ""  # Full body for quality assessment (not exported)
     stars: int = 0
     linked_pr_state: str = ""  # "", "OPEN", "MERGED", "CLOSED"
     is_new: bool = False
@@ -100,6 +141,13 @@ class Issue:
     activity_score: float = 0.0
     pr_score: float = 0.0
     total_score: float = 0.0
+
+    # Quality scores (0-100 each)
+    quality_score: float = 0.0
+    quality_description: float = 0.0
+    quality_scope: float = 0.0
+    quality_mentoring: float = 0.0
+    quality_actionability: float = 0.0
 
 
 # ---------------------------------------------------------------------------
@@ -121,24 +169,47 @@ def run_gh_command(args: list[str], timeout: int = 120) -> str:
     return result.stdout
 
 
-def fetch_issues(org: str) -> list[dict]:
-    """Fetch all open 'good first issue' issues with bodies."""
-    logger.info("Fetching good first issues for org '%s'...", org)
+def fetch_issues(org: str, repos: list[str] | None = None) -> list[dict]:
+    """Fetch all open 'good first issue' issues, optionally scoped to specific repos."""
     fields = (
         "title,url,repository,createdAt,updatedAt,"
         "commentsCount,assignees,labels,state,body,number"
     )
-    output = run_gh_command([
-        "search", "issues",
-        "--label", "good first issue",
-        "--owner", org,
-        "--state", "open",
-        "--limit", str(SEARCH_LIMIT),
-        "--json", fields,
-    ])
-    issues = json.loads(output)
-    logger.info("Fetched %d issues.", len(issues))
-    return issues
+
+    if repos:
+        logger.info("Fetching good first issues for %d specific repos...", len(repos))
+        all_issues: list[dict] = []
+        for repo in repos:
+            try:
+                output = run_gh_command([
+                    "search", "issues",
+                    "--label", "good first issue",
+                    "--repo", repo,
+                    "--state", "open",
+                    "--limit", str(SEARCH_LIMIT),
+                    "--json", fields,
+                ])
+                issues = json.loads(output)
+                all_issues.extend(issues)
+                if issues:
+                    logger.debug("  %s: %d issues", repo, len(issues))
+            except subprocess.CalledProcessError as exc:
+                logger.warning("  Failed to fetch from %s: %s", repo, exc)
+        logger.info("Fetched %d issues from %d repos.", len(all_issues), len(repos))
+        return all_issues
+    else:
+        logger.info("Fetching good first issues for org '%s'...", org)
+        output = run_gh_command([
+            "search", "issues",
+            "--label", "good first issue",
+            "--owner", org,
+            "--state", "open",
+            "--limit", str(SEARCH_LIMIT),
+            "--json", fields,
+        ])
+        issues = json.loads(output)
+        logger.info("Fetched %d issues.", len(issues))
+        return issues
 
 
 def fetch_repo_stars(repos: set[str]) -> dict[str, int]:
@@ -292,6 +363,7 @@ def parse_issues(
             assignees=assignee_names,
             labels=label_names,
             body_excerpt=extract_body_excerpt(raw.get("body")),
+            body_full=raw.get("body", "") or "",
             stars=repo_stars.get(repo_full, 0),
             linked_pr_state=pr_states.get(pr_key, ""),
         )
@@ -376,20 +448,34 @@ def _score_pr_status(pr_state: str) -> float:
     return 50.0
 
 
+def compute_quality(issues: list[Issue]) -> None:
+    """Compute quality heuristic scores for each issue in place."""
+    from gfi_scraper.assess_quality import compute_quality_scores
+
+    for issue in issues:
+        scores = compute_quality_scores(issue.title, issue.body_full, issue.labels)
+        issue.quality_score = scores.overall_score
+        issue.quality_description = scores.description_score
+        issue.quality_scope = scores.scope_score
+        issue.quality_mentoring = scores.mentoring_score
+        issue.quality_actionability = scores.actionability_score
+
+
 # ---------------------------------------------------------------------------
 # Caching and diffing
 # ---------------------------------------------------------------------------
 
 
-def get_cache_path(org: str) -> Path:
-    """Get the cache file path for the given org."""
+def get_cache_path(org: str, repos: list[str] | None = None) -> Path:
+    """Get the cache file path for the given org/repo scope."""
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    return CACHE_DIR / f"{org}_issues.json"
+    suffix = repos_cache_key(repos)
+    return CACHE_DIR / f"{org}{suffix}_issues.json"
 
 
-def get_previous_cache(org: str) -> dict[str, dict] | None:
+def get_previous_cache(org: str, repos: list[str] | None = None) -> dict[str, dict] | None:
     """Load the previous cache, keyed by 'repo#number'."""
-    cache_path = get_cache_path(org)
+    cache_path = get_cache_path(org, repos)
     if not cache_path.exists():
         return None
     try:
@@ -399,9 +485,9 @@ def get_previous_cache(org: str) -> dict[str, dict] | None:
         return None
 
 
-def save_cache(org: str, issues: list[Issue]) -> None:
+def save_cache(org: str, issues: list[Issue], repos: list[str] | None = None) -> None:
     """Save current results to cache."""
-    cache_path = get_cache_path(org)
+    cache_path = get_cache_path(org, repos)
     cache_data = {
         "org": org,
         "fetched_at": datetime.now(timezone.utc).isoformat(),
@@ -464,6 +550,7 @@ def apply_diff(issues: list[Issue], previous: dict[str, dict] | None) -> tuple[i
 CSV_COLUMNS = [
     "rank",
     "total_score",
+    "quality_score",
     "is_new",
     "score_delta",
     "title",
@@ -482,6 +569,10 @@ CSV_COLUMNS = [
     "popularity_score",
     "activity_score",
     "pr_score",
+    "quality_description",
+    "quality_scope",
+    "quality_mentoring",
+    "quality_actionability",
 ]
 
 
@@ -515,6 +606,11 @@ def export_csv(issues: list[Issue], output_path: Path) -> None:
                 "popularity_score": f"{issue.popularity_score:.1f}",
                 "activity_score": f"{issue.activity_score:.1f}",
                 "pr_score": f"{issue.pr_score:.1f}",
+                "quality_score": f"{issue.quality_score:.1f}",
+                "quality_description": f"{issue.quality_description:.1f}",
+                "quality_scope": f"{issue.quality_scope:.1f}",
+                "quality_mentoring": f"{issue.quality_mentoring:.1f}",
+                "quality_actionability": f"{issue.quality_actionability:.1f}",
             })
 
     logger.info("Exported %d issues to %s", len(sorted_issues), output_path)
@@ -525,12 +621,12 @@ def export_csv(issues: list[Issue], output_path: Path) -> None:
 # ---------------------------------------------------------------------------
 
 
-def run_scrape(org: str, output: str) -> int:
+def run_scrape(org: str, output: str, repos: list[str] | None = None) -> int:
     """Execute a single scrape run. Returns exit code."""
     now = datetime.now(timezone.utc)
 
     try:
-        raw_issues = fetch_issues(org)
+        raw_issues = fetch_issues(org, repos)
     except (subprocess.CalledProcessError, FileNotFoundError) as exc:
         logger.error("Failed to fetch issues: %s", exc)
         return 1
@@ -565,12 +661,15 @@ def run_scrape(org: str, output: str) -> int:
 
     compute_scores(issues, now)
 
+    # Compute quality scores using full body (available during scrape)
+    compute_quality(issues)
+
     # Diff against previous run
-    previous = get_previous_cache(org)
+    previous = get_previous_cache(org, repos)
     new_count, missing_count, changed_count = apply_diff(issues, previous)
 
     # Save cache
-    save_cache(org, issues)
+    save_cache(org, issues, repos)
 
     # Export CSV
     output_path = Path(output)
@@ -625,7 +724,7 @@ def _handle_sigint(signum, frame):
     print("\n\n⏹️  Stopping watch mode gracefully...")
 
 
-def watch_mode(org: str, output: str, interval_hours: float, max_runs: int) -> int:
+def watch_mode(org: str, output: str, interval_hours: float, max_runs: int, repos: list[str] | None = None) -> int:
     """Run the scraper on a schedule."""
     global _stop_watch
     signal.signal(signal.SIGINT, _handle_sigint)
@@ -634,7 +733,8 @@ def watch_mode(org: str, output: str, interval_hours: float, max_runs: int) -> i
     run_count = 0
     backoff = 1
 
-    print(f"👁️  Watch mode: refreshing every {interval_hours}h (max {max_runs} runs)")
+    scope = f"{len(repos)} repos" if repos else f"org '{org}'"
+    print(f"👁️  Watch mode: refreshing {scope} every {interval_hours}h (max {max_runs} runs)")
     print(f"   Press Ctrl+C to stop.\n")
 
     while not _stop_watch and run_count < max_runs:
@@ -643,7 +743,7 @@ def watch_mode(org: str, output: str, interval_hours: float, max_runs: int) -> i
         print(f"  Run {run_count}/{max_runs} — {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         print(f"{'─'*70}")
 
-        exit_code = run_scrape(org, output)
+        exit_code = run_scrape(org, output, repos)
 
         if exit_code != 0:
             wait = min(backoff * 60, interval_seconds)
@@ -682,6 +782,14 @@ def parse_args() -> argparse.Namespace:
         help=f"GitHub organization to search (default: {DEFAULT_ORG})",
     )
     parser.add_argument(
+        "--repos",
+        help="Comma-separated list of repo names to search (e.g. 'observability,cos-lib')",
+    )
+    parser.add_argument(
+        "--repos-file",
+        help="Path to a file with repo names (one per line)",
+    )
+    parser.add_argument(
         "--output", "-o",
         default=DEFAULT_OUTPUT,
         help=f"Output CSV file path (default: {DEFAULT_OUTPUT})",
@@ -711,20 +819,41 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def _resolve_repos(args: argparse.Namespace) -> list[str] | None:
+    """Resolve the repos list from CLI args."""
+    repos: list[str] = []
+    if args.repos:
+        repos.extend(r.strip() for r in args.repos.split(",") if r.strip())
+    if args.repos_file:
+        repos_path = Path(args.repos_file)
+        if not repos_path.exists():
+            logger.error("Repos file not found: %s", repos_path)
+            sys.exit(1)
+        repos.extend(load_repos_file(repos_path))
+    if not repos:
+        return None
+    return normalize_repos(repos, args.org)
+
+
 def main() -> int:
     args = parse_args()
+    repos = _resolve_repos(args)
 
     if args.cron:
         script_path = Path(__file__).resolve()
-        # Default: every 6 hours
+        repos_flag = ""
+        if args.repos:
+            repos_flag = f" --repos {args.repos}"
+        elif args.repos_file:
+            repos_flag = f" --repos-file {args.repos_file}"
         print("# Good First Issue scraper — add to crontab with: crontab -e")
-        print(f"0 */6 * * * cd {script_path.parent} && python3 {script_path.name} --org {args.org} -o {args.output}")
+        print(f"0 */6 * * * cd {script_path.parent} && python3 {script_path.name} --org {args.org}{repos_flag} -o {args.output}")
         return 0
 
     if args.watch:
-        return watch_mode(args.org, args.output, args.interval, args.max_runs)
+        return watch_mode(args.org, args.output, args.interval, args.max_runs, repos)
 
-    return run_scrape(args.org, args.output)
+    return run_scrape(args.org, args.output, repos)
 
 
 if __name__ == "__main__":

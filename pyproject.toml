@@ -23,6 +23,7 @@ dev = [
 gfi-scraper = "gfi_scraper.tui:main"
 gfi-scrape = "gfi_scraper.scrape_good_first_issues:main"
 gfi-match = "gfi_scraper.match_issues:main"
+gfi-assess = "gfi_scraper.assess_quality:main"
 gfi-tui = "gfi_scraper.tui:main"
 
 [project.urls]

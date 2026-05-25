@@ -86,6 +86,11 @@ class Issue:
     is_new: bool = False
     score_delta: float = 0.0
     pr_score: float = 0.0
+    quality_score: float = 0.0
+    quality_description: float = 0.0
+    quality_scope: float = 0.0
+    quality_mentoring: float = 0.0
+    quality_actionability: float = 0.0
 
 
 # ---------------------------------------------------------------------------
@@ -120,6 +125,11 @@ def load_issues(csv_path: Path) -> list[Issue]:
                 is_new=row.get("is_new", "") == "🆕",
                 score_delta=float(row["score_delta"]) if row.get("score_delta") else 0.0,
                 pr_score=float(row["pr_score"]) if row.get("pr_score") else 0.0,
+                quality_score=float(row["quality_score"]) if row.get("quality_score") else 0.0,
+                quality_description=float(row["quality_description"]) if row.get("quality_description") else 0.0,
+                quality_scope=float(row["quality_scope"]) if row.get("quality_scope") else 0.0,
+                quality_mentoring=float(row["quality_mentoring"]) if row.get("quality_mentoring") else 0.0,
+                quality_actionability=float(row["quality_actionability"]) if row.get("quality_actionability") else 0.0,
             ))
     return issues
 

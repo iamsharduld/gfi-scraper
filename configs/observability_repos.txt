@@ -1,0 +1,26 @@
+# Canonical Observability Team Repositories
+# One repo per line (bare name or owner/repo format)
+# Lines starting with # are comments
+cos-configuration-k8s-operator
+microcloud-cluster-manager
+observability-team
+observability-stack
+observability
+o11y-tester-operator
+cos-lib
+cos-lite-bundle
+signal-studio
+juju-introspect-operator
+observability-libs
+cos-tool
+charmed-aether-sd-core
+sdcore-cos-configuration
+observability-charm-tools
+is-devops-cos-configuration
+charmed-5g
+is-stg-observability-cos-staging
+mimir-k8s-operator
+CI-testing-grafana-agent-fork
+observability-libs-1
+elasticsearch-k8s-operator
+graylog-k8s-operator
