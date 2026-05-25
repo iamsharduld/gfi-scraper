@@ -1,0 +1,171 @@
+gfi_score,title,url,repo,labels,comments,created_at,reason,improved_description,original_body_excerpt
+5,The default value for `git_branch` should be `main`,https://github.com/canonical/cos-configuration-k8s-operator/issues/153,canonical/cos-configuration-k8s-operator,,0,2026-02-20,"Changing the default git branch from master to main is a small, clear configuration update likely requiring only tests or docs adjustments.","## Context
+
+`cos-configuration-k8s-operator` can sync configuration from a Git repository. The charm exposes a `git_branch` configuration option to choose which branch to sync.
+
+## Problem
+
+The default value for `git_branch` is currently `master`. Many repositories now use `main` as the default branch, so the charm should default to `main` instead.
+
+## Suggested approach
+
+1. Search the repository for `git_branch` and `master`.
+2. Update the default value of the `git_branch` config option from `master` to `main`.
+3. Update any documentation or examples that describe the default branch.
+4. Update tests that assert the old default value.
+5. Run the relevant test suite.
+
+## Files to look at
+
+- `config.yaml`
+- `README.md`
+- `docs/`
+- `tests/`
+
+## Acceptance criteria
+
+- The default value of `git_branch` is `main`.
+- Documentation and examples no longer claim the default is `master`.
+- Tests pass with the new default.
+- Existing users can still explicitly configure `git_branch=master` if needed.
+
+## Resources
+
+- Juju charm config documentation: https://juju.is/docs/sdk/config",Currently it's `master`. Shouldn't it be `main` given that most people have switched to main already?
+4,move documentation out of discourse,https://github.com/canonical/cos-configuration-k8s-operator/issues/162,canonical/cos-configuration-k8s-operator,Type: Enhancement; Status: Triage,0,2026-04-20,"Documentation migration is a bounded, non-architectural task with a clear target, though it may require learning the repo's Sphinx setup.","## Context
+
+`cos-configuration-k8s-operator` is a Juju charm for managing COS configuration in Kubernetes. Its user documentation is currently linked from `charmcraft.yaml` to a Discourse page.
+
+## Problem
+
+The charm documentation should be moved out of Discourse and into the repository's Sphinx documentation so it can be built, reviewed, and versioned with the code.
+
+Current documentation link in `charmcraft.yaml` points to:
+
+https://discourse.charmhub.io/t/cos-configuration-k8s-docs-index/7284
+
+## Suggested approach
+
+1. Inspect the existing documentation setup in the repository.
+2. Create or update the Sphinx documentation source files.
+3. Migrate the relevant content from the Discourse page into the Sphinx docs.
+4. Update navigation/index pages so the new docs are discoverable.
+5. Update `charmcraft.yaml` so the documentation link no longer points to Discourse.
+6. Build the docs locally and fix any warnings or broken links.
+
+## Files to look at
+
+- `charmcraft.yaml`
+- `docs/`
+- `README.md`
+- `tox.ini` or other docs build configuration, if present
+
+## Acceptance criteria
+
+- Documentation content from the Discourse page is available in the repository's Sphinx docs.
+- `charmcraft.yaml` no longer links to the Discourse documentation page.
+- The documentation builds successfully locally.
+- Existing links and navigation are updated as needed.
+
+## Resources
+
+- Current Discourse docs: https://discourse.charmhub.io/t/cos-configuration-k8s-docs-index/7284
+- Sphinx documentation: https://www.sphinx-doc.org/","### Enhancement Proposal
+
+Documentation should be moved to sphinx.
+In charmcraft.yaml the documentation link points to: https://discourse.charmhub.io/t/cos-configuration-k8s-docs-index/7284"
+4,git-sync action calls git-sync twice,https://github.com/canonical/cos-configuration-k8s-operator/issues/146,canonical/cos-configuration-k8s-operator,Type: Enhancement; Status: Triage,0,2026-01-28,"The duplicate git-sync call has a clear cause and proposed fix, though preserving action error behavior may require some care.","## Context
+
+`cos-configuration-k8s-operator` includes a `git-sync` action that syncs configuration from Git. The charm also has a common exit hook that performs shared cleanup/update logic, including running git-sync to update the stored hash.
+
+## Problem
+
+The `git-sync` action currently runs git-sync directly and then calls `self._common_exit_hook()`. Since `_common_exit_hook()` also runs git-sync, the action ends up syncing twice.
+
+The action should avoid the duplicate sync while preserving the useful error output currently shown by the action.
+
+## Suggested approach
+
+1. Find the action handler for `git-sync`.
+2. Confirm where git-sync is called directly and where `_common_exit_hook()` calls it again.
+3. Refactor the action so git-sync is only called once.
+4. Preserve or improve the action's error reporting so users still get useful failure details.
+5. Add or update tests to assert that the action triggers git-sync only once.
+6. Run the relevant unit tests.
+
+## Files to look at
+
+- `src/charm.py`
+- `actions.yaml`
+- `tests/`
+
+## Acceptance criteria
+
+- Running the `git-sync` action invokes git-sync only once.
+- The store hash is still updated correctly after the action.
+- Error output from a failed `git-sync` action remains useful and actionable.
+- Unit tests cover the duplicate-call scenario.
+
+## Resources
+
+- Juju actions documentation: https://juju.is/docs/sdk/actions","### Enhancement Proposal
+
+When the action is run, the charm executes `self._common_exit_hook()` to `to update the store hash`, but the common exit hook calls git-sync again, so we call it twice. We sh"
+4,Dynamic IP for COS stack in dev mode,https://github.com/canonical/microcloud-cluster-manager/issues/183,canonical/microcloud-cluster-manager,,0,2025-04-22,"Making the dev COS IP dynamic is a clear, localized dev-configuration improvement with limited architectural impact.","## Context
+
+`microcloud-cluster-manager` includes Kubernetes deployment files for running the project in development mode. The dev configuration includes endpoints for the COS stack, such as Prometheus and Grafana.
+
+## Problem
+
+The dev config currently hard-codes the IP address for Prometheus and Grafana:
+
+https://github.com/canonical/microcloud-cluster-manager/blob/main/deployment/k8s/dev/config/dev-config.yaml#L25
+
+In some dev runs, the COS stack receives a different IP address on startup, causing the config to point to the wrong endpoint.
+
+## Suggested approach
+
+1. Inspect how the dev deployment is started and how `dev-config.yaml` is consumed.
+2. Identify where the current Prometheus/Grafana IP can be discovered during startup.
+3. Replace the hard-coded IP with a dynamic value, for example by:
+   - using Kubernetes service DNS names if available, or
+   - generating the dev config from a template during startup, or
+   - reading the current service/load-balancer IP in the dev setup script.
+4. Update any dev setup documentation to describe the new behavior.
+5. Test by restarting the dev environment and confirming the generated/used endpoint matches the current COS stack IP.
+
+## Files to look at
+
+- `deployment/k8s/dev/config/dev-config.yaml`
+- `deployment/k8s/dev/`
+- Any dev startup scripts or README files under `deployment/k8s/dev/`
+
+## Acceptance criteria
+
+- Prometheus and Grafana endpoints are no longer tied to a hard-coded IP in the committed dev config.
+- The dev environment uses the correct COS stack IP/address for the current run.
+- Restarting the dev environment with a different assigned IP still works.
+- Dev setup documentation is updated if the workflow changes.
+
+## Resources
+
+- Current hard-coded config location: https://github.com/canonical/microcloud-cluster-manager/blob/main/deployment/k8s/dev/config/dev-config.yaml#L25
+- Kubernetes Services documentation: https://kubernetes.io/docs/concepts/services-networking/service/",The [dev config](https://github.com/canonical/microcloud-cluster-manager/blob/main/deployment/k8s/dev/config/dev-config.yaml#L25) hard codes the IP of Prometheus and Grafana. Sometimes another IP addr
+3,Rewrite `test_utils` using feature files,https://github.com/canonical/cos-configuration-k8s-operator/issues/156,canonical/cos-configuration-k8s-operator,Type: Enhancement; Status: Triage,0,2026-03-27,Rewriting a test utility with feature files is bounded but the expected approach is underspecified and would need guidance.,,"### Enhancement Proposal
+
+The `test_utils` file was added as part #154. We should experiment with rewriting it using feature files."
+3,chore: update libraries to new major versions,https://github.com/canonical/cos-configuration-k8s-operator/issues/134,canonical/cos-configuration-k8s-operator,,0,2025-09-18,Updating a charm library major version is well-defined but may involve handling breaking API changes and test failures.,,"This issue was created automatically because a new major version was detected for a charm library.
+
+You should update the following libraries:
+
+- update <b>charms.loki_k8s.v0.loki_push_api</b> to <b>v"
+3,chore: update libraries to new major versions,https://github.com/canonical/cos-configuration-k8s-operator/issues/133,canonical/cos-configuration-k8s-operator,,0,2025-09-17,Updating a charm library major version is well-defined but may involve handling breaking API changes and test failures.,,"This issue was created automatically because a new major version was detected for a charm library.
+
+You should update the following libraries:
+
+- update <b>charms.loki_k8s.v0.loki_push_api</b> to <b>v"
+3,chore: update libraries to new major versions,https://github.com/canonical/cos-configuration-k8s-operator/issues/94,canonical/cos-configuration-k8s-operator,,0,2024-04-23,Updating a charm library major version is well-defined but may involve handling breaking API changes and test failures.,,"This issue was created automatically because a new major version was detected for a charm library.
+
+You should update the following libraries:
+
+- update <b>charms.loki_k8s.v0.loki_push_api</b> to <b>v"
