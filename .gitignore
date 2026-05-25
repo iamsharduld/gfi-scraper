@@ -1,6 +1,8 @@
 # Ignore cache and generated data
 .cache/
 good_first_issues.csv
+good_first_issues_assessed.csv
+discovered_gfis.csv
 __pycache__/
 *.pyc
 .pytest_cache/
