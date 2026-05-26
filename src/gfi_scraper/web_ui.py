@@ -57,7 +57,7 @@ def load_csv(csv_path: str) -> list[dict]:
 # HTML Template
 # ---------------------------------------------------------------------------
 
-HTML_TEMPLATE = r"""
+HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -858,11 +858,11 @@ HTML_TEMPLATE = r"""
                 .replace(/>/g, '&gt;')
                 .replace(/^## (.+)$/gm, '<h2>$1</h2>')
                 .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\\*\\*(.+?)\\*\\*/g, '<strong>$1</strong>')
                 .replace(/`([^`]+)`/g, '<code>$1</code>')
                 .replace(/^- (.+)$/gm, '<li>$1</li>')
                 .replace(/(<li>.*<\\/li>)/gms, '<ul>$1</ul>')
-                .replace(/^(\d+)\\.\\s(.+)$/gm, '<li>$2</li>')
+                .replace(/^(\\d+)\\.\\s(.+)$/gm, '<li>$2</li>')
                 .replace(/\\n\\n/g, '</p><p>')
                 .replace(/\\n/g, '<br>');
         }
